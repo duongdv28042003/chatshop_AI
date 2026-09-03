@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+psycopg2-binary
+pgvector
+python-dotenv
+pillow
+git+https://github.com/openai/CLIP.git
+python-multipart
+httpx
+litellm
+redis
