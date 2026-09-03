@@ -164,7 +164,7 @@ export default function DashboardPage() {
       {}
       <div>
         <h1 className="text-2xl font-bold text-foreground">Tổng quan</h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <p suppressHydrationWarning className="text-muted-foreground text-sm mt-1">
           {format(new Date(), "EEEE, dd MMMM yyyy", { locale: vi })}
         </p>
       </div>
