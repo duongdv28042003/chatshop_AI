@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
 
+using Backend.Utils;
+
 namespace Backend.Controllers
 {
     [ApiController]
@@ -35,10 +37,17 @@ namespace Backend.Controllers
             var staff = await _context.Staff.FirstOrDefaultAsync(s => s.Email.ToLower() == key);
             if (staff != null)
             {
-
-                if (staff.PasswordHash != dto.Password && staff.PasswordHash != "hashed_pw_123")
+                if (!PasswordHelper.VerifyPassword(dto.Password, staff.PasswordHash))
                 {
                     return Unauthorized(new { message = "Mật khẩu không chính xác." });
+                }
+
+                // Seamlessly migrate legacy plain text to BCrypt hash
+                if (PasswordHelper.IsLegacyPlainText(staff.PasswordHash))
+                {
+                    staff.PasswordHash = PasswordHelper.HashPassword(dto.Password);
+                    staff.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
                 }
 
                 var token = Guid.NewGuid().ToString("N");
@@ -71,9 +80,17 @@ namespace Backend.Controllers
 
             if (customer != null)
             {
-                if (string.IsNullOrEmpty(customer.PasswordHash) || customer.PasswordHash != dto.Password)
+                if (!PasswordHelper.VerifyPassword(dto.Password, customer.PasswordHash))
                 {
                     return Unauthorized(new { message = "Mật khẩu không chính xác." });
+                }
+
+                // Seamlessly migrate legacy plain text to BCrypt hash
+                if (PasswordHelper.IsLegacyPlainText(customer.PasswordHash))
+                {
+                    customer.PasswordHash = PasswordHelper.HashPassword(dto.Password);
+                    customer.UpdatedAt = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
                 }
 
                 var token = Guid.NewGuid().ToString("N");

@@ -40,7 +40,7 @@ export default function SettingsPage() {
       <Card className="border-border/40 bg-card/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Key className="w-4 h-4 text-violet-400" />
+            <Key className="w-4 h-4 text-[#17c1e8]" />
             Zalo OA Integration
           </CardTitle>
           <CardDescription>Kết nối với tài khoản Zalo Official Account</CardDescription>
@@ -62,7 +62,7 @@ export default function SettingsPage() {
               className="bg-muted/50 text-muted-foreground font-mono text-sm"
             />
           </div>
-          <Button className="bg-gradient-to-r from-violet-500 to-blue-500 text-white">
+          <Button className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 font-bold">
             Lưu cấu hình
           </Button>
         </CardContent>

@@ -137,9 +137,9 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
         <DialogHeader className="pb-3 border-b border-border/40">
           <DialogTitle className="text-xl font-bold flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-violet-500" />
+              <ShoppingBag className="w-5 h-5 text-[#17c1e8]" />
               Giỏ hàng của bạn
-              <Badge variant="secondary" className="text-xs bg-violet-500/10 text-violet-400 border-violet-500/20">
+              <Badge variant="secondary" className="text-xs bg-[#17c1e8]/10 text-[#17c1e8] border-[#17c1e8]/20">
                 {cartService.getTotalCount()} món
               </Badge>
             </div>
@@ -148,7 +148,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 
         {items.length === 0 ? (
           <div className="py-16 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-violet-500/10 text-violet-400 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-full bg-[#17c1e8]/10 text-[#17c1e8] flex items-center justify-center mx-auto">
               <ShoppingBag className="w-8 h-8 opacity-60" />
             </div>
             <div>
@@ -159,7 +159,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
             </div>
             <Button
               onClick={() => onOpenChange(false)}
-              className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl shadow-md shadow-violet-500/20"
+              className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 text-slate-950 font-bold rounded-xl shadow-md shadow-[#17c1e8]/20"
             >
               Tiếp tục mua sắm
             </Button>
@@ -168,44 +168,44 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
           <form onSubmit={handleCheckout} className="space-y-6 pt-3">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-              {}
+              {/* Left Column: Product List */}
               <div className="lg:col-span-7 space-y-3">
-                {}
+                {/* Select all bar */}
                 <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-border/50 text-xs font-semibold">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={isAllSelected}
                       onChange={(e) => cartService.toggleSelectAll(e.target.value === "true" || e.target.checked)}
-                      className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 rounded border-slate-300 dark:border-slate-700"
+                      className="w-4 h-4 rounded text-[#17c1e8] focus:ring-[#17c1e8] border-slate-300 dark:border-slate-700"
                     />
                     <span>Chọn tất cả ({items.length} sản phẩm)</span>
                   </label>
                   <span className="text-muted-foreground">
-                    Đã tích chọn: <strong className="text-violet-500">{totalCount}</strong> món
+                    Đã tích chọn: <strong className="text-[#17c1e8]">{totalCount}</strong> món
                   </span>
                 </div>
 
-                {}
+                {/* Items scroll */}
                 <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
                   {items.map((item) => (
                     <div
                       key={item.variantId}
                       className={`p-3 rounded-2xl border transition-all flex items-center gap-3 ${
                         item.selected
-                          ? "bg-violet-50/40 dark:bg-violet-950/20 border-violet-500/40 shadow-sm"
+                          ? "bg-cyan-500/5 border-[#17c1e8]/40 shadow-sm"
                           : "bg-white dark:bg-slate-900/60 border-border/50 opacity-80"
                       }`}
                     >
-                      {}
+                      {/* Checkbox */}
                       <input
                         type="checkbox"
                         checked={item.selected}
                         onChange={() => cartService.toggleSelect(item.variantId)}
-                        className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
+                        className="w-4 h-4 rounded text-[#17c1e8] focus:ring-[#17c1e8] border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
                       />
 
-                      {}
+                      {/* Thumb */}
                       <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
                         {item.imageUrl ? (
                           <img
@@ -218,13 +218,13 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                         )}
                       </div>
 
-                      {}
+                      {/* Info */}
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {item.productName}
                           </h4>
-                          <span className="text-xs font-bold text-violet-500 dark:text-violet-400 tabular-nums shrink-0">
+                          <span className="text-xs font-bold text-[#17c1e8] tabular-nums shrink-0">
                             {formatVND(item.price * item.quantity)}
                           </span>
                         </div>
@@ -236,7 +236,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                           <span>Đơn giá: {formatVND(item.price)}</span>
                         </div>
 
-                        {}
+                        {/* Controls */}
                         <div className="flex items-center justify-between pt-1">
                           <div className="flex items-center border border-border/60 rounded-lg overflow-hidden bg-background">
                             <button
@@ -273,11 +273,11 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                 </div>
               </div>
 
-              {}
+              {/* Right Column: Checkout Info */}
               <div className="lg:col-span-5 space-y-4">
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3.5">
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 uppercase tracking-wider">
-                    <MapPin className="w-3.5 h-3.5 text-violet-500" />
+                    <MapPin className="w-3.5 h-3.5 text-[#17c1e8]" />
                     Địa chỉ nhận hàng
                   </h3>
 
@@ -330,15 +330,15 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                   </div>
                 </div>
 
-                {}
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/10 via-slate-900 to-slate-900 border border-violet-500/30 space-y-3">
+                {/* Summary Box */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#17c1e8]/10 via-slate-900 to-slate-900 border border-[#17c1e8]/30 space-y-3">
                   <div className="flex items-center justify-between text-xs text-slate-300">
                     <span>Số lượng đã chọn:</span>
                     <strong className="text-white font-bold">{totalCount} món</strong>
                   </div>
                   <div className="flex items-center justify-between border-t border-border/40 pt-2 text-sm">
                     <span className="font-medium text-slate-200">Tổng thanh toán:</span>
-                    <span className="text-lg font-extrabold text-violet-400 tabular-nums">
+                    <span className="text-lg font-extrabold text-[#17c1e8] tabular-nums">
                       {formatVND(totalPrice)}
                     </span>
                   </div>
@@ -346,12 +346,12 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                   <Button
                     type="submit"
                     disabled={isSubmitting || selectedItems.length === 0}
-                    className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl h-10 font-bold shadow-lg shadow-violet-500/25"
+                    className="w-full bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 rounded-xl h-10 font-bold shadow-lg shadow-[#17c1e8]/25"
                   >
                     {isSubmitting ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin text-slate-950" />
                     ) : (
-                      <ArrowRight className="w-4 h-4 mr-2" />
+                      <ArrowRight className="w-4 h-4 mr-2 text-slate-950" />
                     )}
                     Đặt hàng ({totalCount} món)
                   </Button>

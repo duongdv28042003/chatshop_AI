@@ -27,7 +27,7 @@ const TIER_CONFIG: Record<CustomerTier, { label: string; className: string }> = 
   standard: { label: "Thường", className: "bg-slate-500/10 text-slate-400 border-slate-500/20" },
   silver:   { label: "Bạc (Silver)", className: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
   gold:     { label: "Vàng (Gold)", className: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  vip:      { label: "VIP ⭐", className: "bg-purple-500/15 text-purple-300 border-purple-500/30 font-semibold" },
+  vip:      { label: "VIP ⭐", className: "bg-[#17c1e8]/15 text-[#17c1e8] border-[#17c1e8]/30 font-semibold" },
 };
 
 export default function CustomersPage() {
@@ -120,7 +120,7 @@ export default function CustomersPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="w-9 h-9">
-                            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-blue-500 text-white text-xs font-semibold">
+                            <AvatarFallback className="bg-gradient-to-br from-[#17c1e8] to-cyan-600 text-slate-950 text-xs font-bold">
                               {customer.name?.charAt(0) ?? "?"}
                             </AvatarFallback>
                           </Avatar>
@@ -132,7 +132,7 @@ export default function CustomersPage() {
                               )}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              Role: <span className="text-violet-400 font-mono">{customer.role}</span>
+                              Role: <span className="text-[#17c1e8] font-mono font-medium">{customer.role}</span>
                             </p>
                             {customer.note && (
                               <p className="text-xs text-amber-400 mt-0.5">{customer.note}</p>
@@ -192,7 +192,7 @@ export default function CustomersPage() {
                             <DropdownMenuItem onClick={() => updateTier.mutate({ id: customer.id, tier: "gold" })}>
                               Hạng Vàng (Gold)
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateTier.mutate({ id: customer.id, tier: "vip" })} className="text-purple-400 font-medium">
+                            <DropdownMenuItem onClick={() => updateTier.mutate({ id: customer.id, tier: "vip" })} className="text-[#17c1e8] font-semibold">
                               ⭐ Khách VIP
                             </DropdownMenuItem>
                           </DropdownMenuContent>

@@ -41,6 +41,7 @@ namespace Backend.Controllers
                 .Include(o => o.Items)
                     .ThenInclude(i => i.Variant)
                         .ThenInclude(v => v!.Product)
+                            .ThenInclude(p => p!.Images)
                 .AsNoTracking();
 
             if (customerId.HasValue)

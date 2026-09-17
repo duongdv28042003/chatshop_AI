@@ -10,6 +10,15 @@ class EmbeddingService:
         self.model, self.preprocess = clip.load("ViT-B/32", device=self.device)
 
     def embed_image_file(self, path: str | Path) -> list[float]:
+        path_str = str(path)
+        if path_str.startswith("http://") or path_str.startswith("https://"):
+            import urllib.request
+            from io import BytesIO
+            req = urllib.request.Request(path_str, headers={"User-Agent": "Fashion-AI/1.0"})
+            with urllib.request.urlopen(req, timeout=5) as res:
+                data = res.read()
+                return self.embed_image_bytes(data)
+        
         with Image.open(path) as img:
             return self._embed(img)
 

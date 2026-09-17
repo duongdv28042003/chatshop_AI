@@ -123,14 +123,15 @@ function StatCard({
 }
 
 export default function DashboardPage() {
-  const [role, setRole] = useState<string>("admin");
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    setRole(authService.getCurrentUser()?.role || "admin");
+    setRole(authService.getRole());
   }, []);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["dashboard-stats"],
+    enabled: role === "admin" || role === "staff",
     queryFn: async () => {
       try {
         const { data } = await apiClient.get<DashboardStats>("/dashboard/stats");
@@ -143,6 +144,7 @@ export default function DashboardPage() {
 
   const { data: chartData } = useQuery({
     queryKey: ["revenue-chart"],
+    enabled: role === "admin" || role === "staff",
     queryFn: async () => {
       try {
         const { data } = await apiClient.get<RevenueChartData[]>(
@@ -154,6 +156,19 @@ export default function DashboardPage() {
       }
     },
   });
+
+  if (role === null) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto">
+        <Skeleton className="h-44 w-full rounded-3xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-72 rounded-2xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (role === "customer") {
     return <CustomerStorefront />;
@@ -183,7 +198,7 @@ export default function DashboardPage() {
             value={formatVND(stats?.totalRevenue ?? 0)}
             change={stats?.revenueChange}
             icon={DollarSign}
-            iconColor="bg-violet-500/10 text-violet-400"
+            iconColor="bg-[#17c1e8]/10 text-[#17c1e8]"
           />
           <StatCard
             title="Tổng đơn hàng"

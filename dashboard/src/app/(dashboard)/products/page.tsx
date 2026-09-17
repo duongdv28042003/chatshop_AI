@@ -376,14 +376,14 @@ export default function ProductsPage() {
         </div>
         <Button
           onClick={openCreateDialog}
-          className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-lg shadow-violet-500/20"
+          className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 font-bold shadow-lg shadow-[#17c1e8]/20"
         >
           <Plus className="w-4 h-4 mr-2" />
           Thêm sản phẩm
         </Button>
       </div>
 
-      {}
+      {/* Product List Table */}
       <Card className="border-border/40 bg-card/50 backdrop-blur-sm shadow-sm">
         <CardHeader className="pb-4">
           <div className="flex items-center gap-3">
@@ -448,7 +448,7 @@ export default function ProductsPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-sm font-bold text-violet-500 dark:text-violet-400">
+                      <TableCell className="font-mono text-sm font-bold text-[#17c1e8]">
                         {product.code}
                       </TableCell>
                       <TableCell>
@@ -547,12 +547,12 @@ export default function ProductsPage() {
         </CardContent>
       </Card>
 
-      {}
+      {/* Product Form Modal (Create & Edit) */}
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="sm:max-w-5xl w-[95vw] max-h-[92vh] overflow-y-auto p-6">
           <DialogHeader className="pb-3 border-b border-border/40">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Layers className="w-5 h-5 text-violet-500" />
+              <Layers className="w-5 h-5 text-[#17c1e8]" />
               {editingProduct ? `Chỉnh sửa sản phẩm: ${editingProduct.code}` : "Thêm sản phẩm mới"}
             </DialogTitle>
           </DialogHeader>
@@ -564,14 +564,14 @@ export default function ProductsPage() {
             }}
             className="space-y-6 pt-4"
           >
-            {}
+            {/* 2-Column Responsive Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-              {}
+              {/* Left Column: Basic Info & Image Upload */}
               <div className="lg:col-span-5 space-y-4">
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3.5">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Package className="w-4 h-4 text-violet-500" />
+                    <Package className="w-4 h-4 text-[#17c1e8]" />
                     Thông tin cơ bản
                   </h3>
 
@@ -593,7 +593,7 @@ export default function ProductsPage() {
                         id="prod-cat"
                         value={formData.categoryId}
                         onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                        className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#17c1e8]"
                       >
                         <option value="">-- Chọn danh mục --</option>
                         {(categories ?? []).map((c) => (
@@ -623,7 +623,7 @@ export default function ProductsPage() {
                       id="prod-status"
                       value={formData.isActive ? "true" : "false"}
                       onChange={(e) => setFormData({ ...formData, isActive: e.target.value === "true" })}
-                      className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#17c1e8]"
                     >
                       <option value="true">Đang kinh doanh (Active)</option>
                       <option value="false">Tạm ngưng bán (Inactive)</option>
@@ -638,16 +638,16 @@ export default function ProductsPage() {
                       placeholder="Chất liệu thoáng mát, co giãn, form rộng dễ phối đồ..."
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full p-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full p-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#17c1e8]"
                     />
                   </div>
                 </div>
 
-                {}
+                {/* Images Manager */}
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 text-violet-500" />
+                      <ImageIcon className="w-4 h-4 text-[#17c1e8]" />
                       Hình ảnh sản phẩm
                     </h3>
                     <span className="text-[11px] text-muted-foreground">
@@ -655,10 +655,10 @@ export default function ProductsPage() {
                     </span>
                   </div>
 
-                  {}
+                  {/* Dropzone Upload Box */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-violet-500/40 hover:border-violet-500 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer bg-violet-500/5 hover:bg-violet-500/10 transition-colors"
+                    className="border-2 border-dashed border-[#17c1e8]/40 hover:border-[#17c1e8] rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer bg-[#17c1e8]/5 hover:bg-[#17c1e8]/10 transition-colors"
                   >
                     <input
                       ref={fileInputRef}
@@ -668,12 +668,12 @@ export default function ProductsPage() {
                       className="hidden"
                     />
                     {isUploadingImage ? (
-                      <div className="flex items-center gap-2 text-xs text-violet-600 font-medium">
-                        <Loader2 className="w-4 h-4 animate-spin" /> Đang tải ảnh...
+                      <div className="flex items-center gap-2 text-xs text-[#17c1e8] font-medium">
+                        <Loader2 className="w-4 h-4 animate-spin text-[#17c1e8]" /> Đang tải ảnh...
                       </div>
                     ) : (
                       <>
-                        <Upload className="w-6 h-6 text-violet-500 mb-1" />
+                        <Upload className="w-6 h-6 text-[#17c1e8] mb-1" />
                         <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                           Bấm để tải ảnh từ máy tính
                         </p>
@@ -684,7 +684,7 @@ export default function ProductsPage() {
                     )}
                   </div>
 
-                  {}
+                  {/* Add by URL */}
                   <div className="flex items-center gap-1.5">
                     <Input
                       placeholder="Hoặc dán URL ảnh trực tuyến..."
@@ -703,14 +703,14 @@ export default function ProductsPage() {
                     </Button>
                   </div>
 
-                  {}
+                  {/* Image Previews */}
                   {formData.images.length > 0 && (
                     <div className="grid grid-cols-3 gap-2.5 pt-1">
                       {formData.images.map((img, idx) => (
                         <div
                           key={idx}
                           className={`relative group rounded-xl overflow-hidden border-2 aspect-square bg-slate-100 dark:bg-slate-800 ${
-                            img.isPrimary ? "border-violet-500 shadow-md shadow-violet-500/20" : "border-border/60"
+                            img.isPrimary ? "border-[#17c1e8] shadow-md shadow-[#17c1e8]/20" : "border-border/60"
                           }`}
                         >
                           <img
@@ -719,14 +719,12 @@ export default function ProductsPage() {
                             className="w-full h-full object-cover"
                           />
 
-                          {}
                           {img.isPrimary && (
-                            <span className="absolute top-1 left-1 bg-violet-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-sm">
-                              <Star className="w-2.5 h-2.5 fill-white" /> Chính
+                            <span className="absolute top-1 left-1 bg-[#17c1e8] text-slate-950 text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-sm">
+                              <Star className="w-2.5 h-2.5 fill-slate-950" /> Chính
                             </span>
                           )}
 
-                          {}
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 p-1">
                             {!img.isPrimary && (
                               <Button
@@ -758,13 +756,13 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              {}
+              {/* Right Column: Variants Manager */}
               <div className="lg:col-span-7 space-y-4">
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3.5 h-full flex flex-col">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-violet-500" />
+                        <Layers className="w-4 h-4 text-[#17c1e8]" />
                         Danh sách Biến thể (Màu / Size / Giá / Tồn kho)
                       </h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -775,20 +773,20 @@ export default function ProductsPage() {
                       type="button"
                       size="sm"
                       onClick={addVariant}
-                      className="bg-violet-600 hover:bg-violet-700 text-white h-8 px-3 text-xs shadow-sm"
+                      className="bg-[#17c1e8] hover:bg-cyan-400 text-slate-950 font-bold h-8 px-3 text-xs shadow-sm"
                     >
                       <Plus className="w-3.5 h-3.5 mr-1" /> Thêm biến thể
                     </Button>
                   </div>
 
-                  {}
+                  {/* Variant Items List */}
                   <div className="flex-1 space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
                     {formData.variants.map((variant, idx) => (
                       <div
                         key={idx}
-                        className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-border/60 shadow-sm flex items-center gap-3 hover:border-violet-500/40 transition-colors"
+                        className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-border/60 shadow-sm flex items-center gap-3 hover:border-[#17c1e8]/40 transition-colors"
                       >
-                        <div className="w-6 h-6 rounded-full bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 text-xs font-bold flex items-center justify-center shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-cyan-500/10 text-[#17c1e8] text-xs font-bold flex items-center justify-center shrink-0 border border-[#17c1e8]/20">
                           {idx + 1}
                         </div>
 
@@ -871,9 +869,9 @@ export default function ProductsPage() {
               <Button
                 type="submit"
                 disabled={saveMutation.isPending}
-                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md shadow-violet-500/20 px-6"
+                className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 font-bold shadow-md shadow-[#17c1e8]/20 px-6"
               >
-                {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin text-slate-950" />}
                 {editingProduct ? "Lưu thay đổi sản phẩm" : "Hoàn tất tạo sản phẩm"}
               </Button>
             </DialogFooter>
@@ -881,7 +879,7 @@ export default function ProductsPage() {
         </DialogContent>
       </Dialog>
 
-      {}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <DialogContent>
           <DialogHeader>
@@ -893,7 +891,7 @@ export default function ProductsPage() {
           <div className="py-2">
             <p className="text-sm text-slate-700 dark:text-slate-300">
               Bạn có chắc chắn muốn xóa sản phẩm{" "}
-              <strong className="text-violet-500 font-bold">
+              <strong className="text-[#17c1e8] font-bold">
                 {productToDelete?.code} - {productToDelete?.name}
               </strong>{" "}
               không?

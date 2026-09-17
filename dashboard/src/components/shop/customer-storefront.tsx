@@ -30,6 +30,30 @@ function formatVND(amount: number) {
   }).format(amount);
 }
 
+function ProductImage({ src, alt, code }: { src?: string; alt: string; code: string }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) {
+    return (
+      <div className="flex flex-col items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
+        <Shirt className="w-20 h-20 mb-2 opacity-40 text-[#17c1e8]" />
+        <span className="text-xs font-mono font-semibold tracking-wider text-slate-400">
+          {code}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setHasError(true)}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+    />
+  );
+}
+
 export function CustomerStorefront() {
   const [selectedVariants, setSelectedVariants] = useState<Record<string, ProductVariant>>({});
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -97,10 +121,10 @@ export function CustomerStorefront() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-violet-900/60 via-slate-900 to-slate-900 border border-violet-500/20 p-8 sm:p-12 shadow-2xl">
+      {/* Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-cyan-950/80 via-slate-900 to-slate-900 border border-[#17c1e8]/20 p-8 sm:p-12 shadow-2xl">
         <div className="relative z-10 max-w-2xl space-y-4">
-          <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/30 gap-1 px-3 py-1">
+          <Badge className="bg-[#17c1e8]/20 text-[#17c1e8] border-[#17c1e8]/30 gap-1 px-3 py-1">
             <Sparkles className="w-3.5 h-3.5" />
             Bộ Sưu Tập Mới 2026
           </Badge>
@@ -108,36 +132,36 @@ export function CustomerStorefront() {
             Thời Trang Hiện Đại & Phong Cách
           </h1>
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-            Khám phá các mẫu áo thun cotton, quần jean và phụ kiện chất lượng cao. Chú Robot AI ở góc màn hình luôn sẵn sàng tư vấn chọn size và phối đồ cho bạn!
+            Khám phá các mẫu áo thun cotton, quần jean và phụ kiện chất lượng cao. Trợ lý AI ở góc màn hình luôn sẵn sàng tư vấn chọn size và phối đồ cho bạn!
           </p>
         </div>
 
-        {}
+        {/* Action Button */}
         <div className="relative z-10 pt-2 flex items-center gap-3">
           <Button
             onClick={() => setIsCartOpen(true)}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-2xl px-5 h-11 shadow-lg shadow-violet-500/30 flex items-center gap-2 font-bold"
+            className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 rounded-2xl px-5 h-11 shadow-lg shadow-[#17c1e8]/30 flex items-center gap-2 font-bold transition-all"
           >
-            <ShoppingCart className="w-5 h-5" />
+            <ShoppingCart className="w-5 h-5 text-slate-950" />
             Xem Giỏ Hàng
             {cartCount > 0 && (
-              <span className="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full font-extrabold animate-pulse">
+              <span className="bg-slate-950 text-[#17c1e8] text-xs px-2 py-0.5 rounded-full font-extrabold animate-pulse border border-[#17c1e8]/40">
                 {cartCount}
               </span>
             )}
           </Button>
         </div>
 
-        {}
-        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-violet-600/10 to-transparent pointer-events-none" />
+        {/* Ambient Glow */}
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-[#17c1e8]/15 to-transparent pointer-events-none" />
       </div>
 
-      {}
+      {/* Products Grid */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-violet-400" />
+            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+              <ShoppingBag className="w-5 h-5 text-[#17c1e8]" />
               Sản phẩm đang bán
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -149,7 +173,7 @@ export function CustomerStorefront() {
             variant="outline"
             size="sm"
             onClick={() => setIsCartOpen(true)}
-            className="border-violet-500/30 text-violet-400 hover:bg-violet-950/40 relative"
+            className="border-[#17c1e8]/40 text-[#17c1e8] hover:bg-[#17c1e8]/10 relative font-semibold"
           >
             <ShoppingCart className="w-4 h-4 mr-1.5" />
             Giỏ hàng ({cartCount})
@@ -181,26 +205,12 @@ export function CustomerStorefront() {
               return (
                 <Card
                   key={product.id}
-                  className="group overflow-hidden rounded-2xl border-border/40 bg-card/60 backdrop-blur-sm hover:border-violet-500/40 hover:shadow-xl hover:shadow-violet-950/30 transition-all duration-300 flex flex-col"
+                  className="group overflow-hidden rounded-2xl border-border/40 bg-card/60 backdrop-blur-sm hover:border-[#17c1e8]/50 hover:shadow-xl hover:shadow-cyan-950/40 transition-all duration-300 flex flex-col"
                 >
-                  {}
                   <div className="relative aspect-square w-full bg-slate-900 flex items-center justify-center overflow-hidden border-b border-border/30">
-                    {primaryImg ? (
-                      <img
-                        src={primaryImg}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
-                        <Shirt className="w-20 h-20 mb-2 opacity-40 text-violet-400" />
-                        <span className="text-xs font-mono font-semibold tracking-wider text-slate-400">
-                          {product.code}
-                        </span>
-                      </div>
-                    )}
+                    <ProductImage src={primaryImg} alt={product.name} code={product.code} />
 
-                    <Badge className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-xs border-border/40">
+                    <Badge className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-xs border-border/40 text-slate-200">
                       {product.category?.name || "Thời trang"}
                     </Badge>
 
@@ -215,17 +225,15 @@ export function CustomerStorefront() {
                     )}
                   </div>
 
-                  {}
                   <CardContent className="p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div>
-                      <h3 className="font-bold text-base text-foreground group-hover:text-violet-400 transition-colors">
+                      <h3 className="font-bold text-base text-foreground group-hover:text-[#17c1e8] transition-colors">
                         {product.name}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                         {product.description || "Chất vải cao cấp, mềm mịn, mang lại cảm giác thoải mái suốt cả ngày."}
                       </p>
 
-                      {}
                       {variants.length > 0 && (
                         <div className="mt-4 space-y-2">
                           <span className="text-xs text-muted-foreground font-medium">Chọn phân loại:</span>
@@ -239,7 +247,7 @@ export function CustomerStorefront() {
                                   onClick={() => handleSelectVariant(product.id, v)}
                                   className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all ${
                                     isCur
-                                      ? "bg-violet-600 text-white shadow-md shadow-violet-500/30 scale-105"
+                                      ? "bg-[#17c1e8] text-slate-950 font-bold shadow-md shadow-[#17c1e8]/30 scale-105"
                                       : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                                   }`}
                                 >
@@ -255,19 +263,18 @@ export function CustomerStorefront() {
                     <div className="pt-2 border-t border-border/40 space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-muted-foreground block">Giá bán</span>
-                        <span className="text-lg font-bold text-violet-400 tabular-nums">
+                        <span className="text-lg font-bold text-[#17c1e8] tabular-nums">
                           {formatVND(price)}
                         </span>
                       </div>
 
-                      {}
                       <div className="grid grid-cols-2 gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           disabled={!inStock}
                           onClick={() => handleAddToCart(product, false)}
-                          className="border-violet-500/40 text-violet-400 hover:bg-violet-500/10 rounded-xl text-xs font-semibold"
+                          className="border-[#17c1e8]/40 text-[#17c1e8] hover:bg-[#17c1e8]/10 rounded-xl text-xs font-semibold"
                         >
                           <ShoppingCart className="w-3.5 h-3.5 mr-1" />
                           Thêm giỏ
@@ -277,9 +284,9 @@ export function CustomerStorefront() {
                           size="sm"
                           disabled={!inStock}
                           onClick={() => handleAddToCart(product, true)}
-                          className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-violet-500/25"
+                          className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 rounded-xl text-xs font-bold shadow-md shadow-[#17c1e8]/25"
                         >
-                          <Zap className="w-3.5 h-3.5 mr-1" />
+                          <Zap className="w-3.5 h-3.5 mr-1 text-slate-950" />
                           Mua ngay
                         </Button>
                       </div>

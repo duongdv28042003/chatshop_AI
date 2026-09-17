@@ -13,6 +13,7 @@ import {
   RotateCcw,
   Ban,
   ArrowRight,
+  Shirt,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -27,10 +28,46 @@ import type { Order, OrderStatus } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
+function OrderItemImage({
+  images,
+  name,
+  code,
+}: {
+  images?: { imageUrl: string; isPrimary: boolean }[];
+  name: string;
+  code?: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const primary =
+    images?.find((img) => img.isPrimary)?.imageUrl || images?.[0]?.imageUrl;
+
+  if (!primary || hasError) {
+    return (
+      <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-border/60 flex flex-col items-center justify-center text-[#17c1e8] shrink-0">
+        <Shirt className="w-5 h-5 opacity-60 mb-0.5 text-[#17c1e8]" />
+        <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
+          {code || "SP"}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-border/60 shrink-0 relative flex items-center justify-center shadow-sm">
+      <img
+        src={primary}
+        alt={name}
+        onError={() => setHasError(true)}
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+}
+
 const STATUS_MAP: Record<OrderStatus, { label: string; className: string; icon: React.ElementType }> = {
   pending:   { label: "Chờ xác nhận", className: "bg-amber-500/10 text-amber-400 border-amber-500/20", icon: Clock },
   confirmed: { label: "Đã xác nhận",  className: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: CheckCircle },
-  shipping:  { label: "Đang giao hàng", className: "bg-violet-500/10 text-violet-400 border-violet-500/20", icon: Truck },
+  shipping:  { label: "Đang giao hàng", className: "bg-[#17c1e8]/10 text-[#17c1e8] border-[#17c1e8]/20", icon: Truck },
   done:      { label: "Đã giao thành công", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: CheckCircle },
   cancelled: { label: "Đã hủy", className: "bg-red-500/10 text-red-400 border-red-500/20", icon: XCircle },
 };
@@ -83,10 +120,10 @@ export default function MyOrdersPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      {}
+      {/* Header */}
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Receipt className="w-6 h-6 text-violet-400" />
+          <Receipt className="w-6 h-6 text-[#17c1e8]" />
           Đơn mua của tôi
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
@@ -94,31 +131,31 @@ export default function MyOrdersPage() {
         </p>
       </div>
 
-      {}
+      {/* Filter Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 sm:grid-cols-6 h-auto p-1 bg-muted/50 rounded-2xl gap-1">
-          <TabsTrigger value="all" className="text-xs py-2 rounded-xl">
+          <TabsTrigger value="all" className="text-xs py-2 rounded-xl data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">
             Tất cả
           </TabsTrigger>
-          <TabsTrigger value="pending" className="text-xs py-2 rounded-xl">
+          <TabsTrigger value="pending" className="text-xs py-2 rounded-xl data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">
             Chờ xác nhận
           </TabsTrigger>
-          <TabsTrigger value="confirmed" className="text-xs py-2 rounded-xl">
+          <TabsTrigger value="confirmed" className="text-xs py-2 rounded-xl data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">
             Đã xác nhận
           </TabsTrigger>
-          <TabsTrigger value="shipping" className="text-xs py-2 rounded-xl">
+          <TabsTrigger value="shipping" className="text-xs py-2 rounded-xl data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">
             Đang giao
           </TabsTrigger>
-          <TabsTrigger value="done" className="text-xs py-2 rounded-xl">
+          <TabsTrigger value="done" className="text-xs py-2 rounded-xl data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">
             Đã giao
           </TabsTrigger>
-          <TabsTrigger value="cancelled" className="text-xs py-2 rounded-xl">
+          <TabsTrigger value="cancelled" className="text-xs py-2 rounded-xl data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">
             Đã hủy
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {}
+      {/* Orders List */}
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -128,7 +165,7 @@ export default function MyOrdersPage() {
       ) : filteredOrders.length === 0 ? (
         <Card className="border-border/40 bg-card/50 text-center py-16 rounded-2xl">
           <CardContent className="flex flex-col items-center justify-center space-y-4">
-            <ShoppingBag className="w-12 h-12 opacity-30 text-violet-400" />
+            <ShoppingBag className="w-12 h-12 opacity-30 text-[#17c1e8]" />
             <div>
               <p className="font-semibold text-foreground">Không tìm thấy đơn hàng nào</p>
               <p className="text-xs text-muted-foreground mt-1">
@@ -136,7 +173,7 @@ export default function MyOrdersPage() {
               </p>
             </div>
             <Link href="/">
-              <Button className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white rounded-xl shadow-md shadow-violet-500/20">
+              <Button className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 text-slate-950 font-bold rounded-xl shadow-md shadow-[#17c1e8]/20">
                 Khám phá Cửa Hàng
               </Button>
             </Link>
@@ -151,12 +188,12 @@ export default function MyOrdersPage() {
             return (
               <Card
                 key={order.id}
-                className="border-border/40 bg-card/60 rounded-2xl overflow-hidden shadow-sm hover:border-violet-500/30 transition-all"
+                className="border-border/40 bg-card/60 rounded-2xl overflow-hidden shadow-sm hover:border-[#17c1e8]/40 transition-all"
               >
-                {}
+                {/* Header */}
                 <CardHeader className="py-3 px-5 border-b border-border/30 bg-muted/20 flex flex-row items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Package className="w-4 h-4 text-violet-400" />
+                    <Package className="w-4 h-4 text-[#17c1e8]" />
                     <span className="text-xs font-mono font-bold text-foreground">
                       MÃ ĐƠN: #{order.id.slice(0, 8).toUpperCase()}
                     </span>
@@ -170,33 +207,48 @@ export default function MyOrdersPage() {
                   </Badge>
                 </CardHeader>
 
-                {}
+                {/* Content */}
                 <CardContent className="p-5 space-y-4">
                   <div className="space-y-2">
                     {order.items && order.items.length > 0 ? (
-                      order.items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between py-2 border-b border-border/20 last:border-none text-sm"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center font-mono text-xs font-bold text-violet-400 shrink-0">
-                              {item.variant?.product?.code || "SP"}
+                      order.items.map((item, idx) => {
+                        const product = item.variant?.product;
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between py-2.5 border-b border-border/20 last:border-none text-sm gap-3"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <OrderItemImage
+                                images={product?.images}
+                                name={product?.name || item.variant?.sku || "Sản phẩm"}
+                                code={product?.code}
+                              />
+                              <div className="min-w-0 space-y-0.5">
+                                <p className="font-semibold text-xs text-foreground truncate flex items-center gap-1.5">
+                                  {product?.code && (
+                                    <span className="px-1.5 py-0.2 rounded bg-[#17c1e8]/15 text-[#17c1e8] font-mono text-[10px] font-bold shrink-0">
+                                      {product.code}
+                                    </span>
+                                  )}
+                                  <span className="truncate">
+                                    {product?.name || item.variant?.sku || "Sản phẩm thời trang"}
+                                  </span>
+                                </p>
+                                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                                  <span className="bg-muted px-1.5 py-0.5 rounded text-slate-300 text-[10px] font-medium">
+                                    {item.variant?.color || "Tiêu chuẩn"} / {item.variant?.size || "FreeSize"}
+                                  </span>
+                                  <span>Số lượng: <strong className="text-foreground font-semibold">×{item.quantity}</strong></span>
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-semibold text-xs text-foreground">
-                                {item.variant?.product?.name || item.variant?.sku || "Sản phẩm thời trang"}
-                              </p>
-                              <p className="text-[11px] text-muted-foreground">
-                                Phân loại: {item.variant?.color || "Tiêu chuẩn"} - {item.variant?.size || "FreeSize"} × {item.quantity}
-                              </p>
-                            </div>
+                            <span className="font-bold text-xs tabular-nums text-foreground shrink-0">
+                              {formatVND(item.unitPrice * item.quantity)}
+                            </span>
                           </div>
-                          <span className="font-medium text-xs tabular-nums text-slate-200">
-                            {formatVND(item.unitPrice * item.quantity)}
-                          </span>
-                        </div>
-                      ))
+                        );
+                      })
                     ) : (
                       <p className="text-xs text-muted-foreground italic">
                         Chi tiết: {order.note || "Đơn hàng thời trang"}
@@ -204,7 +256,7 @@ export default function MyOrdersPage() {
                     )}
                   </div>
 
-                  {}
+                  {/* Footer Order Summary */}
                   <div className="pt-3 border-t border-border/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="text-xs text-muted-foreground space-y-0.5">
                       {order.note && (
@@ -222,7 +274,7 @@ export default function MyOrdersPage() {
                         <span className="text-[10px] text-muted-foreground block uppercase font-medium">
                           Tổng thanh toán
                         </span>
-                        <span className="text-lg font-extrabold text-violet-400 tabular-nums">
+                        <span className="text-lg font-extrabold text-[#17c1e8] tabular-nums">
                           {formatVND(order.totalAmount)}
                         </span>
                       </div>

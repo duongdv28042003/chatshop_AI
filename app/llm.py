@@ -35,7 +35,26 @@ class LLMService:
             num_retries=0,
         )
 
-    def _rule_based_fallback(self, user_id: str, user_message: str) -> str:
+    def _rule_based_fallback(self, user_id: str, user_message: str, image_path: str = None) -> str:
+        if image_path:
+            try:
+                res = self._tools.search_by_image(image_path=image_path)
+                if res.get("found") and res.get("results"):
+                    item = res["results"][0]
+                    name = item.get("name", "Sản phẩm")
+                    color = item.get("color", "")
+                    size = item.get("size", "")
+                    price = item.get("price", 0)
+                    stock = item.get("stock", 0)
+                    price_str = f"{int(price):,}đ".replace(",", ".")
+                    desc = f"{name}"
+                    if color: desc += f" màu {color}"
+                    if size: desc += f" size {size}"
+                    return f"Dạ em đã nhận diện hình ảnh của mình! Shop hiện có mẫu **{desc}** tương tự (giá {price_str}, còn {stock} sản phẩm sẵn kho) ạ! Anh/chị có muốn đặt mua mẫu này luôn không ạ? 💕"
+            except Exception as ex:
+                print(f"Image search exception: {ex}")
+            return "Dạ em đã nhận được hình ảnh sản phẩm của mình! Em đang đối soát kho các mẫu áo thun basic và quần jean tương tự cho anh/chị đây ạ 💕"
+
         text = user_message.lower()
 
         height_match = re.search(r'(?:cao\s*)?(\d+)[m,.](\d+)|(\d{3})\s*(?:cm)?', text)
@@ -171,9 +190,9 @@ class LLMService:
 
                 answer = response.choices[0].message.content or ""
             except Exception:
-                answer = self._rule_based_fallback(user_id, user_message)
+                answer = self._rule_based_fallback(user_id, user_message, image_path=image_path)
         else:
-            answer = self._rule_based_fallback(user_id, user_message)
+            answer = self._rule_based_fallback(user_id, user_message, image_path=image_path)
 
         self._memory.append(user_id, "assistant", answer)
         return answer

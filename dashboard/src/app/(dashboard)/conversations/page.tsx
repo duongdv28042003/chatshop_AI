@@ -130,7 +130,7 @@ export default function ConversationsPage() {
                   <div className="flex items-start gap-4">
                     {}
                     <Avatar className="w-10 h-10 flex-shrink-0">
-                      <AvatarFallback className="bg-gradient-to-br from-violet-500 to-blue-500 text-white text-sm font-semibold">
+                      <AvatarFallback className="bg-gradient-to-br from-[#17c1e8] to-cyan-600 text-slate-950 text-sm font-bold">
                         {conv.customer?.name?.charAt(0) ?? "?"}
                       </AvatarFallback>
                     </Avatar>

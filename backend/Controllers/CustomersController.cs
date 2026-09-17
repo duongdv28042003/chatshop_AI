@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Backend.Data;
 using Backend.Models;
 
+using Backend.Utils;
+
 namespace Backend.Controllers
 {
     [ApiController]
@@ -68,7 +70,7 @@ namespace Backend.Controllers
                 existing.Name = dto.Name ?? existing.Name;
                 existing.Email = dto.Email ?? existing.Email;
                 existing.Address = dto.Address ?? existing.Address;
-                existing.PasswordHash = dto.Password;
+                existing.PasswordHash = PasswordHelper.HashPassword(dto.Password);
                 existing.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
@@ -80,7 +82,7 @@ namespace Backend.Controllers
                 Name = dto.Name,
                 Phone = dto.Phone,
                 Email = dto.Email,
-                PasswordHash = dto.Password,
+                PasswordHash = PasswordHelper.HashPassword(dto.Password),
                 Address = dto.Address,
                 Role = "customer",
                 Tier = "standard"
@@ -106,9 +108,17 @@ namespace Backend.Controllers
                 (c.Phone == identifier || (c.Email != null && c.Email.ToLower() == identifier))
             );
 
-            if (customer == null || customer.PasswordHash != dto.Password)
+            if (customer == null || !PasswordHelper.VerifyPassword(dto.Password, customer.PasswordHash))
             {
                 return Unauthorized(new { message = "Số điện thoại/Email hoặc mật khẩu không chính xác." });
+            }
+
+            // Seamlessly migrate legacy plain text to BCrypt hash
+            if (PasswordHelper.IsLegacyPlainText(customer.PasswordHash))
+            {
+                customer.PasswordHash = PasswordHelper.HashPassword(dto.Password);
+                customer.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
             }
 
             var token = Guid.NewGuid().ToString("N");

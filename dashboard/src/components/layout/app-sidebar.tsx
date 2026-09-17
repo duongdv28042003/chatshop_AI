@@ -30,8 +30,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { authService, type UnifiedUser } from "@/lib/auth";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 interface NavGroup {
   group: string;
@@ -45,7 +45,6 @@ interface NavGroup {
 }
 
 const navConfig: NavGroup[] = [
-
   {
     group: "Mua sắm & Dịch vụ",
     roles: ["customer"],
@@ -54,7 +53,6 @@ const navConfig: NavGroup[] = [
       { title: "Đơn mua của tôi", href: "/my-orders", icon: Receipt, roles: ["customer"] },
     ],
   },
-
   {
     group: "Tổng quan",
     roles: ["admin", "staff"],
@@ -72,7 +70,6 @@ const navConfig: NavGroup[] = [
       { title: "Khách hàng", href: "/customers", icon: Users, roles: ["admin", "staff"] },
     ],
   },
-
   {
     group: "Hệ thống",
     roles: ["admin"],
@@ -85,12 +82,16 @@ const navConfig: NavGroup[] = [
 export function AppSidebar() {
   const pathname = usePathname();
   const [user, setUser] = useState<UnifiedUser | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setUser(authService.getCurrentUser());
+    setMounted(true);
   }, []);
 
-  const role = (user?.role as "admin" | "staff" | "customer") || "admin";
+  const role: "admin" | "staff" | "customer" =
+    (user?.role as "admin" | "staff" | "customer") ||
+    (mounted ? authService.getRole() : "customer");
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -105,33 +106,24 @@ export function AppSidebar() {
     }))
     .filter((g) => g.items.length > 0);
 
+  const roleLabel =
+    role === "customer"
+      ? "Khách Hàng"
+      : role === "admin"
+      ? "Quản Trị Viên"
+      : "Nhân Viên Shop";
+
   return (
-    <Sidebar variant="inset" className="border-r border-slate-700/50">
-      {}
-      <SidebarHeader className="border-b border-slate-700/50 py-4">
-        <div className="flex items-center gap-3 px-2">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 shadow-lg shadow-violet-500/25 flex-shrink-0">
-            <ShoppingBag className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <p className="font-semibold text-sm text-foreground">Fashion Shop</p>
-            <p className="text-xs text-muted-foreground capitalize flex items-center gap-1">
-              {role === "customer" ? (
-                <>
-                  <Sparkles className="w-3 h-3 text-cyan-400" />
-                  Khách Hàng
-                </>
-              ) : role === "admin" ? (
-                "Quản Trị Viên (Admin)"
-              ) : (
-                "Nhân Viên Shop"
-              )}
-            </p>
-          </div>
-        </div>
+    <Sidebar className="border-r border-border">
+      {/* Header */}
+      <SidebarHeader className="h-14 flex items-center justify-between px-4 border-b border-border bg-sidebar shrink-0">
+        <BrandLogo
+          size="md"
+          subtitle={roleLabel}
+        />
       </SidebarHeader>
 
-      {}
+      {/* Navigation */}
       <SidebarContent className="py-2">
         {visibleGroups.map((group) => (
           <SidebarGroup key={group.group}>
@@ -152,19 +144,19 @@ export function AppSidebar() {
                         <item.icon
                           className={`w-4 h-4 flex-shrink-0 transition-colors ${
                             active
-                              ? "text-violet-400"
+                              ? "text-[#17c1e8]"
                               : "text-muted-foreground group-hover:text-foreground"
                           }`}
                         />
                         <span
                           className={`text-sm font-medium ${
-                            active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                            active ? "text-foreground font-semibold" : "text-muted-foreground group-hover:text-foreground"
                           }`}
                         >
                           {item.title}
                         </span>
                         {active && (
-                          <ChevronRight className="ml-auto w-3.5 h-3.5 text-violet-400" />
+                          <ChevronRight className="ml-auto w-3.5 h-3.5 text-[#17c1e8]" />
                         )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -176,25 +168,17 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      {}
-      <SidebarFooter className="border-t border-slate-700/50 py-3">
-        <div className="flex items-center gap-3 px-3">
-          <Avatar className="w-8 h-8 flex-shrink-0">
-            <AvatarFallback className="bg-gradient-to-br from-violet-500 to-blue-500 text-white text-xs font-semibold">
-              {(user?.fullName || user?.name || "U").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
+      {/* Footer User Account */}
+      <SidebarFooter className="border-t border-border py-3">
+        <div className="flex items-center justify-between gap-2 px-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-foreground truncate">
               {user?.fullName || user?.name || "Người dùng"}
-            </p>
-            <p className="text-xs text-muted-foreground capitalize">
-              Role: <span className="text-violet-400 font-mono">{role}</span>
             </p>
           </div>
           <button
             onClick={() => authService.logout()}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors shrink-0"
             title="Đăng xuất"
           >
             <LogOut className="w-4 h-4" />

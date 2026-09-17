@@ -60,21 +60,58 @@ namespace Backend.Controllers
             });
         }
 
-        [HttpPost("send")]
-        public async Task<IActionResult> SendMessage([FromBody] SendMessageDto dto)
+        [HttpPost("upload-image")]
+        public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
         {
-            if (string.IsNullOrWhiteSpace(dto.Message))
+            if (file == null || file.Length == 0)
             {
-                return BadRequest(new { message = "Nội dung tin nhắn không được để trống." });
+                return BadRequest(new { message = "Không tìm thấy file ảnh tải lên." });
             }
 
+            try
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                var extension = Path.GetExtension(file.FileName);
+                if (string.IsNullOrWhiteSpace(extension)) extension = ".jpg";
+                var uniqueFileName = $"{Guid.NewGuid():N}{extension}";
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                var imageUrl = $"http://localhost:5000/uploads/{uniqueFileName}";
+                return Ok(new { imageUrl, fileName = uniqueFileName });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi khi tải ảnh lên: {ex.Message}" });
+            }
+        }
+
+        [HttpPost("send")]
+        [HttpPost("message")]
+        public async Task<IActionResult> SendMessage([FromBody] SendMessageDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Message) && string.IsNullOrWhiteSpace(dto.ImageUrl))
+            {
+                return BadRequest(new { message = "Nội dung tin nhắn hoặc hình ảnh không được để trống." });
+            }
+
+            var textContent = string.IsNullOrWhiteSpace(dto.Message) ? "Tìm kiếm sản phẩm qua hình ảnh" : dto.Message.Trim();
             var conversation = await GetOrCreateConversationAsync(dto.UserId, dto.Role);
 
             var userMsg = new Message
             {
                 ConversationId = conversation.Id,
                 Role = dto.Role == "staff" || dto.Role == "admin" ? "staff" : "user",
-                Content = dto.Message,
+                Content = textContent,
                 ImageUrl = dto.ImageUrl,
                 CreatedAt = DateTime.UtcNow
             };
@@ -89,7 +126,7 @@ namespace Backend.Controllers
 
                 var aiPayload = new
                 {
-                    user_id = dto.UserId,
+                    user_id = string.IsNullOrWhiteSpace(dto.UserId) ? "guest" : dto.UserId,
                     message = dto.Message,
                     image_path = dto.ImageUrl
                 };
@@ -109,7 +146,6 @@ namespace Backend.Controllers
             }
             catch
             {
-
                 aiReply = $"Dạ em đã nhận được yêu cầu '{dto.Message}' rồi ạ! Bé AI đang tra cứu kho hàng và sẵn sàng hỗ trợ mình ngay đây ạ 💕";
             }
 
@@ -142,32 +178,43 @@ namespace Backend.Controllers
         private async Task<Conversation> GetOrCreateConversationAsync(string userId, string role)
         {
             Conversation? conversation = null;
+            string safeUserId = string.IsNullOrWhiteSpace(userId) ? "guest" : userId;
 
-            if (Guid.TryParse(userId, out var guidId))
+            if (Guid.TryParse(safeUserId, out var guidId))
             {
                 if (role == "customer")
                 {
                     conversation = await _context.Conversations
-                        .FirstOrDefaultAsync(c => c.CustomerId == guidId);
+                        .FirstOrDefaultAsync(c => c.CustomerId == guidId || c.ZaloUserId == safeUserId);
                 }
                 else
                 {
                     conversation = await _context.Conversations
-                        .FirstOrDefaultAsync(c => c.AssignedTo == guidId || c.ZaloUserId == userId);
+                        .FirstOrDefaultAsync(c => c.AssignedTo == guidId || c.ZaloUserId == safeUserId);
                 }
             }
             else
             {
                 conversation = await _context.Conversations
-                    .FirstOrDefaultAsync(c => c.ZaloUserId == userId);
+                    .FirstOrDefaultAsync(c => c.ZaloUserId == safeUserId);
             }
 
             if (conversation == null)
             {
+                Guid? validCustomerId = null;
+                if (Guid.TryParse(safeUserId, out var cid) && role == "customer")
+                {
+                    var exists = await _context.Customers.AnyAsync(c => c.Id == cid);
+                    if (exists)
+                    {
+                        validCustomerId = cid;
+                    }
+                }
+
                 conversation = new Conversation
                 {
-                    CustomerId = Guid.TryParse(userId, out var cid) && role == "customer" ? cid : null,
-                    ZaloUserId = userId,
+                    CustomerId = validCustomerId,
+                    ZaloUserId = safeUserId,
                     Status = "ai_handling",
                     IsHumanMode = false,
                     CreatedAt = DateTime.UtcNow,

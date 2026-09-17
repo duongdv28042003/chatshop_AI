@@ -7,8 +7,12 @@ import { Providers } from "@/components/providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Fashion Shop Dashboard",
-  description: "Quản lý cửa hàng thời trang",
+  title: "Fashion Shop AI - Cửa Hàng Thời Trang Thông Minh",
+  description: "Cửa hàng thời trang cao cấp & trợ lý tư vấn phối đồ AI",
+  icons: {
+    icon: "/brand-logo.png",
+    apple: "/brand-logo.png",
+  },
 };
 
 export default function RootLayout({
