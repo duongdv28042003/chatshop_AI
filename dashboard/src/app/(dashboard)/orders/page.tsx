@@ -25,7 +25,7 @@ import { vi } from "date-fns/locale";
 const STATUS_CONFIG: Record<OrderStatus, { label: string; className: string }> = {
   pending:   { label: "Chờ xử lý",  className: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
   confirmed: { label: "Đã xác nhận", className: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  shipping:  { label: "Đang giao",  className: "bg-[#17c1e8]/10 text-[#17c1e8] border-[#17c1e8]/20" },
+  shipping:  { label: "Đang giao",  className: "bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border-neutral-200 dark:border-neutral-700 font-mono" },
   done:      { label: "Hoàn thành", className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
   cancelled: { label: "Đã hủy",     className: "bg-red-500/10 text-red-400 border-red-500/20" },
 };
@@ -93,13 +93,13 @@ export default function OrdersPage() {
 
       {}
       <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as "all" | OrderStatus)}>
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="all">Tất cả</TabsTrigger>
-          <TabsTrigger value="pending">Chờ xử lý</TabsTrigger>
-          <TabsTrigger value="confirmed">Đã xác nhận</TabsTrigger>
-          <TabsTrigger value="shipping">Đang giao</TabsTrigger>
-          <TabsTrigger value="done">Hoàn thành</TabsTrigger>
-          <TabsTrigger value="cancelled">Đã hủy</TabsTrigger>
+        <TabsList className="bg-muted/50 border border-border/50">
+          <TabsTrigger value="all" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Tất cả</TabsTrigger>
+          <TabsTrigger value="pending" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Chờ xử lý</TabsTrigger>
+          <TabsTrigger value="confirmed" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Đã xác nhận</TabsTrigger>
+          <TabsTrigger value="shipping" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Đang giao</TabsTrigger>
+          <TabsTrigger value="done" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Hoàn thành</TabsTrigger>
+          <TabsTrigger value="cancelled" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Đã hủy</TabsTrigger>
         </TabsList>
       </Tabs>
 

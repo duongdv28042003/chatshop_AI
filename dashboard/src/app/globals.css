@@ -56,13 +56,13 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
   --primary: #17c1e8;
-  --primary-foreground: #041c24;
+  --primary-foreground: #09090b;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: #17c1e81a;
-  --accent-foreground: #0ba5c9;
+  --accent: #17c1e8;
+  --accent-foreground: #09090b;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -72,13 +72,13 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: #17c1e8;
-  --sidebar-primary-foreground: #041c24;
-  --sidebar-accent: #17c1e81a;
-  --sidebar-accent-foreground: #0ba5c9;
+  --sidebar-primary-foreground: #09090b;
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: #17c1e8;
 }
@@ -91,13 +91,13 @@
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: #17c1e8;
-  --primary-foreground: #041c24;
+  --primary-foreground: #09090b;
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: #17c1e820;
-  --accent-foreground: #17c1e8;
+  --accent: #17c1e8;
+  --accent-foreground: #09090b;
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -110,9 +110,9 @@
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: #17c1e8;
-  --sidebar-primary-foreground: #041c24;
-  --sidebar-accent: #17c1e820;
-  --sidebar-accent-foreground: #17c1e8;
+  --sidebar-primary-foreground: #09090b;
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: #17c1e8;
 }
@@ -126,5 +126,36 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* Ép cứng lưới 2 cột trên điện thoại (mobile) và 4 cột trên desktop chuẩn Shopee */
+.storefront-product-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 0.5rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 640px) {
+  .storefront-product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .storefront-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .storefront-product-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 1.25rem !important;
   }
 }

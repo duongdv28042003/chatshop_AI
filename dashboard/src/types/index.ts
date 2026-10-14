@@ -88,6 +88,7 @@ export interface Conversation {
   createdAt: string;
   updatedAt: string | null;
   lastMessage?: Message;
+  messageCount?: number;
 }
 
 export interface Message {

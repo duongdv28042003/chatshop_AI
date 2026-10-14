@@ -140,7 +140,12 @@ CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 
 INSERT INTO categories (id, slug, name) VALUES
     ('11111111-1111-1111-1111-111111111111', 'ao-thun', 'Áo thun'),
-    ('22222222-2222-2222-2222-222222222222', 'quan-jeans', 'Quần Jeans')
+    ('22222222-2222-2222-2222-222222222222', 'quan-jeans', 'Quần Jeans'),
+    ('33333333-1111-1111-1111-111111111111', 'ao-so-mi', 'Áo sơ mi'),
+    ('44444444-1111-1111-1111-111111111111', 'ao-khoac', 'Áo khoác & Hoodie'),
+    ('55555555-1111-1111-1111-111111111111', 'quan-short', 'Quần Short'),
+    ('66666666-1111-1111-1111-111111111111', 'quan-tay', 'Quần Tây / Âu'),
+    ('77777777-1111-1111-1111-111111111111', 'dam-vay', 'Váy & Đầm')
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO staff (id, email, password_hash, full_name, role) VALUES
@@ -151,7 +156,13 @@ ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO products (id, code, name, category_id, description, is_active) VALUES
     ('33333333-3333-3333-3333-333333333333', 'A02', 'Áo thun basic cổ tròn', '11111111-1111-1111-1111-111111111111', 'Chất liệu 100% cotton thoáng mát, form rộng unisex', TRUE),
-    ('44444444-4444-4444-4444-444444444444', 'Q01', 'Quần Jean ống suông', '22222222-2222-2222-2222-222222222222', 'Vải denim cao cấp bền màu, kiểu dáng trẻ trung', TRUE)
+    ('44444444-4444-4444-4444-444444444444', 'Q01', 'Quần Jean ống suông', '22222222-2222-2222-2222-222222222222', 'Vải denim cao cấp bền màu, kiểu dáng trẻ trung', TRUE),
+    ('55555555-4444-4444-4444-444444444444', 'A03', 'Áo Polo Nam Phối Cổ Classic Fit', '11111111-1111-1111-1111-111111111111', 'Vải cá sấu cotton co giãn 4 chiều mềm mịn, bo cổ dệt tinh tế.', TRUE),
+    ('66666666-4444-4444-4444-444444444444', 'A04', 'Áo Thun Graphic Streetwear Heavyweight', '11111111-1111-1111-1111-111111111111', 'Form rộng unisex tay lỡ in ấn typo sắc nét, chất liệu 100% cotton 250gsm.', TRUE),
+    ('77777777-4444-4444-4444-444444444444', 'SM01', 'Áo Sơ Mi Oxford Dài Tay Chống Nhăn', '33333333-1111-1111-1111-111111111111', 'Chất vải Oxford dệt thô cao cấp bền bỉ, cúc ngọc trai sang trọng.', TRUE),
+    ('88888888-4444-4444-4444-444444444444', 'Q02', 'Quần Jean Nam Slimfit Co Giãn Cao Cấp', '22222222-2222-2222-2222-222222222222', 'Thiết kế ôm nhẹ tôn dáng chân, chất vải denim cotton co giãn tối ưu.', TRUE),
+    ('99999999-4444-4444-4444-444444444444', 'AK01', 'Áo Khoác Bomber Gió 2 Lớp Chống Nước', '44444444-1111-1111-1111-111111111111', 'Lớp ngoài trượt nước kháng bụi, lớp lót dù cao cấp giữ ấm cản gió.', TRUE),
+    ('aaaaaaaa-4444-4444-4444-444444444444', 'QT01', 'Quần Tây Nam Xếp Ly Form Hàn Quốc', '66666666-1111-1111-1111-111111111111', 'Vải tuyết mưa nhập khẩu cao cấp giữ nếp ly sắc nét, cạp có khuy tăng đơ.', TRUE)
 ON CONFLICT (code) DO NOTHING;
 
 

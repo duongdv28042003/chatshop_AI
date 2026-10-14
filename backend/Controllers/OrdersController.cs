@@ -57,10 +57,13 @@ namespace Backend.Controllers
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var s = search.Trim().ToLower();
-                query = query.Where(o => (o.Customer != null && (
-                    (o.Customer.Name != null && o.Customer.Name.ToLower().Contains(s)) ||
-                    (o.Customer.Phone != null && o.Customer.Phone.Contains(s))
-                )));
+                query = query.Where(o => 
+                    (o.Customer != null && (
+                        (o.Customer.Name != null && o.Customer.Name.ToLower().Contains(s)) ||
+                        (o.Customer.Phone != null && o.Customer.Phone.Contains(s))
+                    )) ||
+                    (o.Note != null && o.Note.ToLower().Contains(s))
+                );
             }
 
             var orders = await query.OrderByDescending(o => o.CreatedAt).ToListAsync();
@@ -77,9 +80,35 @@ namespace Backend.Controllers
 
             int total = dto.Items.Sum(i => i.UnitPrice * i.Quantity);
 
+            // Kiểm tra CustomerId có thực sự tồn tại trong database để tránh lỗi Foreign Key (500)
+            Guid? validCustomerId = null;
+            if (dto.CustomerId.HasValue)
+            {
+                var exists = await _context.Customers.AnyAsync(c => c.Id == dto.CustomerId.Value);
+                if (exists)
+                {
+                    validCustomerId = dto.CustomerId.Value;
+                }
+            }
+
+            // Tự động liên kết khách hàng theo số điện thoại từ Note nếu chưa có CustomerId
+            if (!validCustomerId.HasValue && !string.IsNullOrWhiteSpace(dto.Note))
+            {
+                var phoneMatch = System.Text.RegularExpressions.Regex.Match(dto.Note, @"SĐT:\s*([0-9]{9,11})");
+                if (phoneMatch.Success)
+                {
+                    var phone = phoneMatch.Groups[1].Value.Trim();
+                    var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == phone);
+                    if (customer != null)
+                    {
+                        validCustomerId = customer.Id;
+                    }
+                }
+            }
+
             var order = new Order
             {
-                CustomerId = dto.CustomerId,
+                CustomerId = validCustomerId,
                 TotalAmount = total,
                 Status = "pending",
                 Note = dto.Note,
@@ -88,9 +117,19 @@ namespace Backend.Controllers
 
             foreach (var item in dto.Items)
             {
+                Guid? validVariantId = null;
+                if (item.VariantId.HasValue)
+                {
+                    var vExists = await _context.ProductVariants.AnyAsync(v => v.Id == item.VariantId.Value);
+                    if (vExists)
+                    {
+                        validVariantId = item.VariantId.Value;
+                    }
+                }
+
                 order.Items.Add(new OrderItem
                 {
-                    VariantId = item.VariantId,
+                    VariantId = validVariantId,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice,
                     CreatedAt = DateTime.UtcNow

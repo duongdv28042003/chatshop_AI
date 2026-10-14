@@ -17,7 +17,6 @@ import {
   Phone,
   Mail,
   MapPin,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,40 +88,20 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-950 text-slate-100 relative overflow-hidden py-12 px-4 sm:px-6">
-      {/* Dynamic Background Mesh Gradients */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[550px] h-[550px] rounded-full bg-[#17c1e8]/15 blur-[130px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[650px] h-[650px] rounded-full bg-cyan-600/10 blur-[150px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-slate-900/40 rounded-full blur-[110px]" />
-
-        {/* Grid overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(#17c1e8 1px, transparent 1px)`,
-            backgroundSize: "24px 24px",
-          }}
-        />
-      </div>
-
-      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+    <div className="min-h-screen w-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6">
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         {/* Left Side: Brand Showcase */}
         <div className="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-6 pr-2">
-          <BrandLogo size="xl" lightText subtitle="Thành Viên VIP Boutique" />
+          <BrandLogo size="xl" subtitle="Thành Viên Khách Hàng" />
 
           <div className="space-y-3">
-            <Badge className="bg-[#17c1e8]/15 text-[#17c1e8] border-[#17c1e8]/30 px-3 py-1 gap-1.5 font-semibold text-xs w-fit">
-              <Sparkles className="w-3.5 h-3.5" />
+            <Badge className="bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 px-2.5 py-1 font-mono text-xs w-fit">
               Đặc Quyền Hội Viên
             </Badge>
-            <h2 className="text-3xl font-extrabold text-white leading-tight tracking-tight">
-              Gia Nhập Để Nhận Ưu Đãi & Tư Vấn{" "}
-              <span className="bg-gradient-to-r from-[#17c1e8] to-cyan-300 bg-clip-text text-transparent">
-                Độc Quyền
-              </span>
+            <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 leading-tight tracking-tight">
+              Gia Nhập Để Nhận Ưu Đãi & Tư Vấn Độc Quyền
             </h2>
-            <p className="text-slate-400 text-sm leading-relaxed">
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed">
               Đăng ký tài khoản nhanh chóng chỉ với số điện thoại để tích điểm nâng hạng thành viên và theo dõi đơn hàng tiện lợi.
             </p>
           </div>
@@ -130,18 +109,15 @@ export default function RegisterPage() {
 
         {/* Right Side: Register Card */}
         <div className="lg:col-span-7 w-full max-w-md mx-auto">
-          <div className="relative rounded-3xl bg-slate-900/80 backdrop-blur-2xl border border-slate-800/90 p-8 sm:p-10 shadow-2xl shadow-cyan-950/40">
-            {/* Glowing Top Line */}
-            <div className="absolute top-0 left-8 right-8 h-[2px] bg-gradient-to-r from-transparent via-[#17c1e8] to-transparent" />
-
+          <div className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 shadow-sm">
             <div className="text-center mb-6 space-y-2">
               <div className="flex justify-center mb-2 lg:hidden">
-                <BrandLogo size="lg" lightText />
+                <BrandLogo size="lg" />
               </div>
-              <h3 className="text-2xl font-extrabold text-white tracking-tight">
+              <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
                 Đăng Ký Tài Khoản
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-neutral-500">
                 Tạo tài khoản khách hàng mới trong 30 giây
               </p>
             </div>
@@ -158,16 +134,16 @@ export default function RegisterPage() {
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <User className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                           <Input
                             {...field}
                             placeholder="Nguyễn Văn A"
-                            className="bg-slate-950/60 border-slate-700/80 text-white placeholder:text-slate-500 pl-10 h-10 rounded-xl text-xs focus:border-[#17c1e8] focus:ring-[#17c1e8]/20"
+                            className="bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 h-9 rounded-md text-xs focus:border-neutral-400 dark:focus:border-neutral-600"
                             disabled={loading}
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-red-400 text-xs" />
+                      <FormMessage className="text-red-500 text-xs" />
                     </FormItem>
                   )}
                 />
@@ -178,21 +154,21 @@ export default function RegisterPage() {
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-slate-300">
+                        <FormLabel className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                           Số điện thoại *
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <Phone className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                             <Input
                               {...field}
                               placeholder="0901234567"
-                              className="bg-slate-950/60 border-slate-700/80 text-white placeholder:text-slate-500 pl-10 h-10 rounded-xl text-xs focus:border-[#17c1e8] focus:ring-[#17c1e8]/20"
+                              className="bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 h-9 rounded-md text-xs focus:border-neutral-400 dark:focus:border-neutral-600"
                               disabled={loading}
                             />
                           </div>
                         </FormControl>
-                        <FormMessage className="text-red-400 text-xs" />
+                        <FormMessage className="text-red-500 text-xs" />
                       </FormItem>
                     )}
                   />
@@ -202,22 +178,22 @@ export default function RegisterPage() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-slate-300">
+                        <FormLabel className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                           Email (tùy chọn)
                         </FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <Mail className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                             <Input
                               {...field}
                               type="email"
                               placeholder="email@gmail.com"
-                              className="bg-slate-950/60 border-slate-700/80 text-white placeholder:text-slate-500 pl-10 h-10 rounded-xl text-xs focus:border-[#17c1e8] focus:ring-[#17c1e8]/20"
+                              className="bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 h-9 rounded-md text-xs focus:border-neutral-400 dark:focus:border-neutral-600"
                               disabled={loading}
                             />
                           </div>
                         </FormControl>
-                        <FormMessage className="text-red-400 text-xs" />
+                        <FormMessage className="text-red-500 text-xs" />
                       </FormItem>
                     )}
                   />
@@ -228,23 +204,23 @@ export default function RegisterPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-semibold text-slate-300">
+                      <FormLabel className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                         Mật khẩu *
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <Lock className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
                             placeholder="Tối thiểu 6 ký tự..."
-                            className="bg-slate-950/60 border-slate-700/80 text-white placeholder:text-slate-500 pl-10 pr-10 h-10 rounded-xl text-xs focus:border-[#17c1e8] focus:ring-[#17c1e8]/20"
+                            className="bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 pr-9 h-9 rounded-md text-xs focus:border-neutral-400 dark:focus:border-neutral-600"
                             disabled={loading}
                           />
                           <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
                           >
                             {showPassword ? (
                               <EyeOff className="w-4 h-4" />
@@ -254,7 +230,7 @@ export default function RegisterPage() {
                           </button>
                         </div>
                       </FormControl>
-                      <FormMessage className="text-red-400 text-xs" />
+                      <FormMessage className="text-red-500 text-xs" />
                     </FormItem>
                   )}
                 />
@@ -264,21 +240,21 @@ export default function RegisterPage() {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-semibold text-slate-300">
-                        Địa chỉ giao hàng (tùy chọn)
+                      <FormLabel className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                        Địa chỉ nhận hàng (tùy chọn)
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <MapPin className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                           <Input
                             {...field}
                             placeholder="Số nhà, tên đường, phường/xã..."
-                            className="bg-slate-950/60 border-slate-700/80 text-white placeholder:text-slate-500 pl-10 h-10 rounded-xl text-xs focus:border-[#17c1e8] focus:ring-[#17c1e8]/20"
+                            className="bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 h-9 rounded-md text-xs focus:border-neutral-400 dark:focus:border-neutral-600"
                             disabled={loading}
                           />
                         </div>
                       </FormControl>
-                      <FormMessage className="text-red-400 text-xs" />
+                      <FormMessage className="text-red-500 text-xs" />
                     </FormItem>
                   )}
                 />
@@ -286,16 +262,16 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-3 bg-gradient-to-r from-[#17c1e8] via-cyan-400 to-cyan-500 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 font-bold h-11 rounded-xl shadow-lg shadow-[#17c1e8]/30 transition-all hover:scale-[1.01]"
+                  className="w-full mt-2 bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold h-9 rounded-md text-xs shadow-sm transition-colors"
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin text-slate-950" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Đang xử lý đăng ký...
                     </>
                   ) : (
                     <>
-                      <UserPlus className="mr-2 h-4 w-4 text-slate-950" />
+                      <UserPlus className="mr-2 h-4 w-4" />
                       Tạo Tài Khoản Ngay
                     </>
                   )}
@@ -303,12 +279,12 @@ export default function RegisterPage() {
               </form>
             </Form>
 
-            <div className="mt-5 text-center">
-              <p className="text-xs text-slate-400">
+            <div className="mt-5 text-center border-t border-neutral-200 dark:border-neutral-800 pt-3">
+              <p className="text-xs text-neutral-500">
                 Đã có tài khoản?{" "}
                 <Link
                   href="/login"
-                  className="text-[#17c1e8] hover:text-cyan-300 font-bold inline-flex items-center gap-1 transition-colors ml-1"
+                  className="text-neutral-900 dark:text-neutral-100 hover:underline font-medium inline-flex items-center gap-1 transition-colors ml-1"
                 >
                   Đăng nhập tại đây
                   <ArrowRight className="w-3.5 h-3.5" />

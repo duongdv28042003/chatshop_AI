@@ -27,7 +27,7 @@ const TIER_CONFIG: Record<CustomerTier, { label: string; className: string }> = 
   standard: { label: "Thường", className: "bg-slate-500/10 text-slate-400 border-slate-500/20" },
   silver:   { label: "Bạc (Silver)", className: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
   gold:     { label: "Vàng (Gold)", className: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
-  vip:      { label: "VIP ⭐", className: "bg-[#17c1e8]/15 text-[#17c1e8] border-[#17c1e8]/30 font-semibold" },
+  vip:      { label: "VIP ⭐", className: "bg-[#17c1e8]/15 text-[#0c8ba8] dark:text-[#17c1e8] border-[#17c1e8]/40 font-mono font-bold" },
 };
 
 export default function CustomersPage() {
@@ -67,12 +67,12 @@ export default function CustomersPage() {
       </div>
 
       <Tabs value={tierFilter} onValueChange={setTierFilter}>
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="all">Tất cả khách</TabsTrigger>
-          <TabsTrigger value="standard">Khách thường</TabsTrigger>
-          <TabsTrigger value="silver">Hạng Bạc</TabsTrigger>
-          <TabsTrigger value="gold">Hạng Vàng</TabsTrigger>
-          <TabsTrigger value="vip">Khách VIP ⭐</TabsTrigger>
+        <TabsList className="bg-muted/50 border border-border/50">
+          <TabsTrigger value="all" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Tất cả khách</TabsTrigger>
+          <TabsTrigger value="standard" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Khách thường</TabsTrigger>
+          <TabsTrigger value="silver" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Hạng Bạc</TabsTrigger>
+          <TabsTrigger value="gold" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Hạng Vàng</TabsTrigger>
+          <TabsTrigger value="vip" className="data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold">Khách VIP ⭐</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -119,20 +119,20 @@ export default function CustomersPage() {
                     <TableRow key={customer.id} className="border-border/40 hover:bg-muted/30">
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar className="w-9 h-9">
-                            <AvatarFallback className="bg-gradient-to-br from-[#17c1e8] to-cyan-600 text-slate-950 text-xs font-bold">
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className="bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 border border-neutral-200 dark:border-neutral-700 text-xs font-mono font-medium">
                               {customer.name?.charAt(0) ?? "?"}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium text-sm flex items-center gap-1.5">
+                            <p className="font-medium text-sm flex items-center gap-1.5 text-neutral-900 dark:text-neutral-100">
                               {customer.name ?? "Khách vãng lai"}
                               {customer.tier === "vip" && (
-                                <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                                <Crown className="w-3.5 h-3.5 text-neutral-500" />
                               )}
                             </p>
-                            <p className="text-xs text-muted-foreground">
-                              Role: <span className="text-[#17c1e8] font-mono font-medium">{customer.role}</span>
+                            <p className="text-xs text-neutral-500">
+                              Role: <span className="text-neutral-700 dark:text-neutral-300 font-mono font-medium">{customer.role}</span>
                             </p>
                             {customer.note && (
                               <p className="text-xs text-amber-400 mt-0.5">{customer.note}</p>
@@ -192,8 +192,8 @@ export default function CustomersPage() {
                             <DropdownMenuItem onClick={() => updateTier.mutate({ id: customer.id, tier: "gold" })}>
                               Hạng Vàng (Gold)
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateTier.mutate({ id: customer.id, tier: "vip" })} className="text-[#17c1e8] font-semibold">
-                              ⭐ Khách VIP
+                            <DropdownMenuItem onClick={() => updateTier.mutate({ id: customer.id, tier: "vip" })} className="font-mono font-medium text-neutral-900 dark:text-neutral-100">
+                              Khách VIP
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

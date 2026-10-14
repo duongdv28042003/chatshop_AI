@@ -25,7 +25,7 @@ class DatabaseService:
             params.append(f"%{name}%")
         if color:
             conditions.append("pv.color ILIKE %s")
-            params.append(color)
+            params.append(f"%{color}%")
         if size:
             conditions.append("pv.size ILIKE %s")
             params.append(size)
@@ -49,7 +49,9 @@ class DatabaseService:
 
     def query_by_vector(self, embedding: list[float], top_k: int = 1) -> list[dict]:
         sql = """
-            SELECT p.id, p.code, p.name, p.price,
+            SELECT p.id, p.code, p.name,
+                COALESCE((SELECT MIN(price) FROM product_variants WHERE product_id = p.id), 0) AS price,
+                COALESCE((SELECT SUM(stock) FROM product_variants WHERE product_id = p.id), 0) AS stock,
                 1 - (pi.embedding <=> %s::vector) AS similarity
             FROM product_images pi
             JOIN products p ON p.id = pi.product_id

@@ -42,15 +42,17 @@ class LLMService:
                 if res.get("found") and res.get("results"):
                     item = res["results"][0]
                     name = item.get("name", "Sản phẩm")
+                    code = item.get("code", "")
                     color = item.get("color", "")
                     size = item.get("size", "")
                     price = item.get("price", 0)
                     stock = item.get("stock", 0)
                     price_str = f"{int(price):,}đ".replace(",", ".")
-                    desc = f"{name}"
+                    desc = f"[{code}] {name}" if code else name
                     if color: desc += f" màu {color}"
                     if size: desc += f" size {size}"
-                    return f"Dạ em đã nhận diện hình ảnh của mình! Shop hiện có mẫu **{desc}** tương tự (giá {price_str}, còn {stock} sản phẩm sẵn kho) ạ! Anh/chị có muốn đặt mua mẫu này luôn không ạ? 💕"
+                    stock_info = f", còn {stock} sản phẩm sẵn kho" if stock > 0 else ""
+                    return f"Dạ em đã nhận diện hình ảnh của mình! Shop hiện có mẫu **{desc}** tương tự (giá {price_str}{stock_info}) sẵn sàng phục vụ ạ! Anh/chị có muốn đặt mua mẫu này luôn không ạ? 💕"
             except Exception as ex:
                 print(f"Image search exception: {ex}")
             return "Dạ em đã nhận được hình ảnh sản phẩm của mình! Em đang đối soát kho các mẫu áo thun basic và quần jean tương tự cho anh/chị đây ạ 💕"
@@ -97,23 +99,49 @@ class LLMService:
         if any(kw in text for kw in ["tư vấn size", "chọn size", "size nào", "size gì", "mặc size"]):
             return "Dạ để tư vấn size chuẩn nhất cho bạn, bạn cho mình biết chiều cao và cân nặng của bạn được không ạ?"
 
-        code_match = re.search(r'\b(a\d+|q\d+)\b', text)
+        code_match = re.search(r'\b([a-zA-Z]{1,2}\d{2})\b', text)
         code = code_match.group(1).upper() if code_match else None
 
         name = None
-        if "áo thun" in text or "áo" in text:
-            name = "áo thun"
-        elif "jean" in text or "quần" in text:
-            name = "jean"
+        keywords_map = [
+            (["sơ mi", "so mi", "oxford", "flannel", "cuba"], "sơ mi"),
+            (["polo"], "polo"),
+            (["blazer", "vest"], "blazer"),
+            (["cardigan"], "cardigan"),
+            (["hoodie"], "hoodie"),
+            (["bomber", "áo khoác", "khoác", "gió", "windbreaker"], "khoác"),
+            (["áo len", "len", "cổ lọ"], "len"),
+            (["áo thun", "áo phông", "t-shirt", "tee"], "áo thun"),
+            (["quần short", "short", "sooc"], "short"),
+            (["quần tây", "quần âu", "xếp ly"], "quần tây"),
+            (["jogger"], "jogger"),
+            (["quần jean", "quần bò", "jean", "denim", "baggy"], "jean"),
+            (["đầm", "váy", "vintage"], "váy"),
+        ]
+        for kws, target in keywords_map:
+            if any(kw in text for kw in kws):
+                name = target
+                break
 
         color = None
-        for c in ["đen", "trắng", "hồng", "xanh nhạt", "xanh"]:
+        for c in [
+            "xanh navy", "xanh rêu", "xanh ngọc", "xanh nhạt", "xanh đậm", "xanh khói", "xanh coban", "xanh",
+            "trắng kem", "trắng viền đen", "trắng toàn phần", "trắng",
+            "đen khói", "đen hoa", "đen tuyền", "đen rách", "đen",
+            "nâu cà phê", "nâu đất", "nâu be", "nâu",
+            "be sữa", "kaki be", "be",
+            "xám tiêu", "xám chuột", "xám",
+            "vàng nhạt", "vàng nâu", "vàng",
+            "hồng pastel", "hồng",
+            "cam đất", "cam",
+            "rêu", "kem"
+        ]:
             if c in text:
                 color = c
                 break
 
         size_req = None
-        for s in ["xxl", "xl", "s", "m", "l", "29", "30", "31", "32"]:
+        for s in ["xxl", "2xl", "xl", "s", "m", "l", "freesize", "fs", "29", "30", "31", "32", "33", "34", "38", "39", "40", "41"]:
             if re.search(rf'\b{s}\b', text):
                 size_req = s.upper()
                 break
@@ -139,6 +167,8 @@ class LLMService:
                     return f"Dạ {desc} hiện đang hết rất nhanh rồi ạ (giá {price_str}). Bạn nhanh tay đặt trước kẻo hết nha!"
                 else:
                     return f"Dạ bên mình rất tiếc là {desc} hiện đã tạm hết hàng rồi ạ. Shop xin lỗi bạn nhé, bên mình sẽ sớm nhập thêm. Bạn có muốn xem màu hoặc size khác không ạ?"
+            elif code:
+                return f"Dạ mã sản phẩm {code} hiện shop đang cập nhật hoặc tạm hết hàng. Bạn có thể xem thêm các mẫu áo thun, sơ mi, blazer hoặc quần jean đang có sẵn nhé!"
 
         if any(kw in text for kw in ["đặt", "mua", "lấy cái", "chốt"]):
             phone_match = re.search(r'0\d{9,10}', text)
@@ -147,7 +177,7 @@ class LLMService:
             else:
                 return "Dạ mình đã ghi nhận thông tin đặt hàng của bạn rồi ạ! Nhân viên bên mình sẽ liên hệ với bạn sớm nhất để xác nhận đơn hàng nhé. Cảm ơn bạn đã tin tưởng Shop!"
 
-        return "Dạ em chào anh/chị ạ! Em là Trợ Lý AI của Fashion Shop. Em có thể hỗ trợ mình tư vấn size chuẩn, kiểm tra mẫu áo thun basic A02 hoặc quần jean Q01 ngay ạ!"
+        return "Dạ em chào anh/chị ạ! Em là Trợ Lý AI của Fashion Shop. Em có thể hỗ trợ mình tư vấn size, kiểm tra tồn kho các mẫu áo thun, áo sơ mi, áo khoác, quần jean, quần tây và váy đầm mới nhất của shop ngay ạ! 💕"
 
     def chat(self, user_id: str, user_message: str, image_path: str = None) -> str:
         self._memory.append(user_id, "user", user_message)

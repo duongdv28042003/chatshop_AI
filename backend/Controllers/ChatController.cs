@@ -118,6 +118,23 @@ namespace Backend.Controllers
             _context.Messages.Add(userMsg);
             await _context.SaveChangesAsync();
 
+            // Nếu hội thoại đã được chuyển giao cho Nhân viên tiếp quản (Human Mode), KHÔNG gọi AI tự động trả lời
+            if (conversation.IsHumanMode || conversation.Status == "human_handling")
+            {
+                conversation.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    conversationId = conversation.Id,
+                    userMessage = userMsg,
+                    aiMessage = (Message?)null,
+                    reply = (string?)null,
+                    isHumanMode = true,
+                    status = conversation.Status
+                });
+            }
+
             string aiReply = string.Empty;
             try
             {
@@ -236,6 +253,59 @@ namespace Backend.Controllers
             }
 
             return conversation;
+        }
+
+        public class ChatUpdateMessageDto
+        {
+            public string Content { get; set; } = string.Empty;
+        }
+
+        [HttpPut("messages/{id}")]
+        public async Task<IActionResult> UpdateMessage(Guid id, [FromBody] ChatUpdateMessageDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Content))
+            {
+                return BadRequest(new { message = "Nội dung tin nhắn không được để trống." });
+            }
+
+            var message = await _context.Messages.FindAsync(id);
+            if (message == null) return NotFound(new { message = "Không tìm thấy tin nhắn." });
+
+            message.Content = dto.Content.Trim();
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                id = message.Id,
+                conversationId = message.ConversationId,
+                role = message.Role,
+                content = message.Content,
+                imageUrl = message.ImageUrl,
+                createdAt = message.CreatedAt
+            });
+        }
+
+        [HttpDelete("messages/{id}")]
+        public async Task<IActionResult> DeleteMessage(Guid id, [FromQuery] bool recall = false)
+        {
+            var message = await _context.Messages.FindAsync(id);
+            if (message == null) return NotFound(new { message = "Không tìm thấy tin nhắn." });
+
+            if (recall)
+            {
+                // Thu hồi (2 phía)
+                message.Content = "[Tin nhắn đã được thu hồi]";
+                message.ImageUrl = null;
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Đã thu hồi tin nhắn", recalled = true, id });
+            }
+            else
+            {
+                // Xóa hoàn toàn
+                _context.Messages.Remove(message);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Đã xóa tin nhắn", deleted = true, id });
+            }
         }
     }
 }

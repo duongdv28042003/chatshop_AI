@@ -179,25 +179,37 @@ namespace Backend.Controllers
 
             if (dto.Images != null && dto.Images.Any())
             {
-                bool hasPrimary = false;
+                var primaryDto = dto.Images.FirstOrDefault(img => img.IsPrimary) ?? dto.Images.FirstOrDefault(img => !string.IsNullOrWhiteSpace(img.ImageUrl));
                 foreach (var img in dto.Images)
                 {
                     if (string.IsNullOrWhiteSpace(img.ImageUrl)) continue;
-                    bool isPrim = img.IsPrimary || !hasPrimary;
+                    bool isPrim = (img == primaryDto);
                     product.Images.Add(new ProductImage
                     {
                         ImageUrl = img.ImageUrl.Trim(),
                         IsPrimary = isPrim,
                         CreatedAt = DateTime.UtcNow
                     });
-                    if (isPrim) hasPrimary = true;
                 }
             }
 
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            try
+            {
+                _context.Products.Add(product);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            }
+            catch (DbUpdateException ex)
+            {
+                var detail = ex.InnerException?.Message ?? ex.Message;
+                if (detail.Contains("idx_images_primary"))
+                    return BadRequest(new { message = "Mỗi sản phẩm chỉ được có 1 ảnh đại diện chính." });
+                if (detail.Contains("product_variants_product_id_color_size_key") || detail.Contains("color, size"))
+                    return BadRequest(new { message = "Đã tồn tại biến thể có cùng Màu sắc và Size cho sản phẩm này." });
+                if (detail.Contains("product_variants_sku_key") || detail.Contains("sku"))
+                    return BadRequest(new { message = "Mã SKU của biến thể đã bị trùng lặp trong hệ thống." });
+                return BadRequest(new { message = $"Lỗi cập nhật cơ sở dữ liệu: {detail}" });
+            }
         }
 
         [HttpPut("{id}")]
@@ -267,11 +279,11 @@ namespace Backend.Controllers
                 var imagesToRemove = product.Images.Where(img => !incomingImgIds.Contains(img.Id)).ToList();
                 _context.ProductImages.RemoveRange(imagesToRemove);
 
-                bool hasPrimary = false;
+                var primaryDto = dto.Images.FirstOrDefault(img => img.IsPrimary) ?? dto.Images.FirstOrDefault(img => !string.IsNullOrWhiteSpace(img.ImageUrl));
                 foreach (var img in dto.Images)
                 {
                     if (string.IsNullOrWhiteSpace(img.ImageUrl)) continue;
-                    bool isPrim = img.IsPrimary || !hasPrimary;
+                    bool isPrim = (img == primaryDto);
 
                     if (img.Id.HasValue)
                     {
@@ -291,12 +303,25 @@ namespace Backend.Controllers
                             CreatedAt = DateTime.UtcNow
                         });
                     }
-                    if (isPrim) hasPrimary = true;
                 }
             }
 
-            await _context.SaveChangesAsync();
-            return Ok(product);
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(product);
+            }
+            catch (DbUpdateException ex)
+            {
+                var detail = ex.InnerException?.Message ?? ex.Message;
+                if (detail.Contains("idx_images_primary"))
+                    return BadRequest(new { message = "Mỗi sản phẩm chỉ được có 1 ảnh đại diện chính." });
+                if (detail.Contains("product_variants_product_id_color_size_key") || detail.Contains("color, size"))
+                    return BadRequest(new { message = "Đã tồn tại biến thể có cùng Màu sắc và Size cho sản phẩm này." });
+                if (detail.Contains("product_variants_sku_key") || detail.Contains("sku"))
+                    return BadRequest(new { message = "Mã SKU của biến thể đã bị trùng lặp trong hệ thống." });
+                return BadRequest(new { message = $"Lỗi cập nhật cơ sở dữ liệu: {detail}" });
+            }
         }
 
         [HttpDelete("{id}")]

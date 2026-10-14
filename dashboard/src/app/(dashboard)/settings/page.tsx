@@ -62,7 +62,7 @@ export default function SettingsPage() {
               className="bg-muted/50 text-muted-foreground font-mono text-sm"
             />
           </div>
-          <Button className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 font-bold">
+          <Button className="bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold text-xs rounded-md shadow-sm">
             Lưu cấu hình
           </Button>
         </CardContent>
@@ -72,7 +72,7 @@ export default function SettingsPage() {
       <Card className="border-border/40 bg-card/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Bot className="w-4 h-4 text-blue-400" />
+            <Bot className="w-4 h-4 text-[#17c1e8]" />
             Cấu hình AI Agent
           </CardTitle>
           <CardDescription>Điều chỉnh hành vi của chatbot</CardDescription>
@@ -82,7 +82,9 @@ export default function SettingsPage() {
             <label className="text-sm font-medium text-muted-foreground">Model LLM</label>
             <Input defaultValue="ollama/qwen3.5:9b" className="bg-muted/50" />
           </div>
-          <Button variant="outline">Lưu cấu hình AI</Button>
+          <Button className="bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold text-xs rounded-md shadow-sm">
+            Lưu cấu hình AI
+          </Button>
         </CardContent>
       </Card>
 
@@ -92,13 +94,13 @@ export default function SettingsPage() {
       <Card className="border-border/40 bg-card/50">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Users className="w-4 h-4 text-emerald-400" />
+            <Users className="w-4 h-4 text-[#17c1e8]" />
             Quản lý nhân viên
           </CardTitle>
           <CardDescription>Thêm và phân quyền tài khoản nhân viên</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant="outline">
+          <Button variant="outline" className="border-[#17c1e8]/30 hover:bg-[#17c1e8]/10 text-neutral-900 dark:text-neutral-100 font-semibold text-xs">
             Quản lý nhân viên →
           </Button>
         </CardContent>

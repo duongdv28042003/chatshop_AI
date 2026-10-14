@@ -101,11 +101,41 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 
     setIsSubmitting(true);
     try {
-      const orderPayload = {
-        customerId: currentUser?.id && currentUser.role === "customer" ? currentUser.id : null,
-        note: `Khách: ${shippingInfo.name} - SĐT: ${shippingInfo.phone} - Đ/C: ${shippingInfo.address || "Tại shop"}${
-          shippingInfo.note ? ` | Ghi chú: ${shippingInfo.note}` : ""
-        }`,
+      const phoneToMatch = shippingInfo.phone.trim();
+      let validCustomerId: string | null = null;
+
+      // 1. Kiểm tra UUID hợp lệ từ currentUser
+      if (currentUser?.id && currentUser.role === "customer") {
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentUser.id);
+        if (isUuid) {
+          validCustomerId = currentUser.id;
+        }
+      }
+
+      // 2. Tra cứu khách hàng theo số điện thoại từ API để lấy đúng Id trong DB
+      if (phoneToMatch) {
+        try {
+          const { data: found } = await apiClient.get<any[]>("/customers", {
+            params: { search: phoneToMatch },
+          });
+          const match = found?.find((c: any) => c.phone === phoneToMatch);
+          if (match?.id) {
+            validCustomerId = match.id;
+            try {
+              if (currentUser && currentUser.id !== match.id) {
+                const updated = { ...currentUser, id: match.id };
+                localStorage.setItem("user_info", JSON.stringify(updated));
+                localStorage.setItem("staff_info", JSON.stringify(updated));
+              }
+            } catch { }
+          }
+        } catch { }
+      }
+
+      const orderPayload: { customerId: string | null; note: string; items: any[] } = {
+        customerId: validCustomerId,
+        note: `Khách: ${shippingInfo.name} - SĐT: ${shippingInfo.phone} - Đ/C: ${shippingInfo.address || "Tại shop"}${shippingInfo.note ? ` | Ghi chú: ${shippingInfo.note}` : ""
+          }`,
         items: selectedItems.map((item) => ({
           variantId: item.variantId,
           quantity: item.quantity,
@@ -113,18 +143,28 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
         })),
       };
 
-      await apiClient.post("/orders", orderPayload);
+      try {
+        await apiClient.post("/orders", orderPayload);
+      } catch (firstErr: any) {
+        // Fallback retry: Nếu backend báo lỗi (500 do foreign key customerId không khớp), thử lại với customerId: null
+        if (orderPayload.customerId) {
+          orderPayload.customerId = null;
+          await apiClient.post("/orders", orderPayload);
+        } else {
+          throw firstErr;
+        }
+      }
 
       cartService.removePurchased(selectedItems.map((i) => i.variantId));
 
       await queryClient.invalidateQueries({ queryKey: ["my-orders"] });
 
-      toast.success("🎉 Đặt hàng thành công! Đơn hàng đã được lưu vào mục 'Đơn mua của tôi'.");
+      toast.success("Đặt hàng thành công! Đơn hàng đã được lưu vào mục 'Đơn mua của tôi'.");
       onOpenChange(false);
       router.push("/my-orders");
     } catch (err: any) {
       console.error("Order creation failed", err);
-      const errMsg = err?.response?.data?.message || "Không thể tạo đơn hàng. Hãy chắc chắn Backend C# đã được khởi động lại!";
+      const errMsg = err?.response?.data?.message || "Không thể tạo đơn hàng. Vui lòng kiểm tra lại thông tin.";
       toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
@@ -133,13 +173,13 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl w-[95vw] max-h-[92vh] overflow-y-auto p-6">
-        <DialogHeader className="pb-3 border-b border-border/40">
-          <DialogTitle className="text-xl font-bold flex items-center justify-between">
+      <DialogContent className="sm:max-w-4xl w-[95vw] max-h-[92vh] overflow-y-auto p-5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <DialogHeader className="pb-3 border-b border-neutral-200 dark:border-neutral-800">
+          <DialogTitle className="text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-[#17c1e8]" />
-              Giỏ hàng của bạn
-              <Badge variant="secondary" className="text-xs bg-[#17c1e8]/10 text-[#17c1e8] border-[#17c1e8]/20">
+              <ShoppingBag className="w-4 h-4 text-[#17c1e8]" />
+              <span>Giỏ hàng của bạn</span>
+              <Badge variant="secondary" className="text-xs font-mono rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 px-2 py-0.5">
                 {cartService.getTotalCount()} món
               </Badge>
             </div>
@@ -147,66 +187,65 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
         </DialogHeader>
 
         {items.length === 0 ? (
-          <div className="py-16 text-center space-y-4">
-            <div className="w-16 h-16 rounded-full bg-[#17c1e8]/10 text-[#17c1e8] flex items-center justify-center mx-auto">
-              <ShoppingBag className="w-8 h-8 opacity-60" />
+          <div className="py-12 text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 flex items-center justify-center mx-auto">
+              <ShoppingBag className="w-6 h-6 opacity-60 text-[#17c1e8]" />
             </div>
             <div>
-              <p className="font-semibold text-lg text-foreground">Giỏ hàng đang trống</p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">Giỏ hàng đang trống</p>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                 Hãy ghé qua Cửa Hàng để thêm các mẫu quần áo yêu thích vào giỏ nhé!
               </p>
             </div>
             <Button
               onClick={() => onOpenChange(false)}
-              className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 text-slate-950 font-bold rounded-xl shadow-md shadow-[#17c1e8]/20"
+              className="rounded-md bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold text-xs h-8 px-4 shadow-sm"
             >
               Tiếp tục mua sắm
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleCheckout} className="space-y-6 pt-3">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <form onSubmit={handleCheckout} className="space-y-5 pt-2">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
 
               {/* Left Column: Product List */}
               <div className="lg:col-span-7 space-y-3">
                 {/* Select all bar */}
-                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-border/50 text-xs font-semibold">
+                <div className="flex items-center justify-between p-2.5 rounded-md bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs font-medium">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
                       checked={isAllSelected}
                       onChange={(e) => cartService.toggleSelectAll(e.target.value === "true" || e.target.checked)}
-                      className="w-4 h-4 rounded text-[#17c1e8] focus:ring-[#17c1e8] border-slate-300 dark:border-slate-700"
+                      className="w-4 h-4 rounded text-neutral-900 focus:ring-neutral-400 border-neutral-300 dark:border-neutral-700 cursor-pointer"
                     />
                     <span>Chọn tất cả ({items.length} sản phẩm)</span>
                   </label>
-                  <span className="text-muted-foreground">
-                    Đã tích chọn: <strong className="text-[#17c1e8]">{totalCount}</strong> món
+                  <span className="text-neutral-500 dark:text-neutral-400">
+                    Đã chọn: <strong className="font-mono text-neutral-900 dark:text-neutral-100">{totalCount}</strong> món
                   </span>
                 </div>
 
                 {/* Items scroll */}
-                <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+                <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
                   {items.map((item) => (
                     <div
                       key={item.variantId}
-                      className={`p-3 rounded-2xl border transition-all flex items-center gap-3 ${
-                        item.selected
-                          ? "bg-cyan-500/5 border-[#17c1e8]/40 shadow-sm"
-                          : "bg-white dark:bg-slate-900/60 border-border/50 opacity-80"
-                      }`}
+                      className={`p-3 rounded-md border transition-colors flex items-center gap-3 ${item.selected
+                          ? "bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700 shadow-sm"
+                          : "bg-neutral-50/50 dark:bg-neutral-950/50 border-neutral-200 dark:border-neutral-800 opacity-75"
+                        }`}
                     >
                       {/* Checkbox */}
                       <input
                         type="checkbox"
                         checked={item.selected}
                         onChange={() => cartService.toggleSelect(item.variantId)}
-                        className="w-4 h-4 rounded text-[#17c1e8] focus:ring-[#17c1e8] border-slate-300 dark:border-slate-700 cursor-pointer shrink-0"
+                        className="w-4 h-4 rounded text-neutral-900 focus:ring-neutral-400 border-neutral-300 dark:border-neutral-700 cursor-pointer shrink-0"
                       />
 
                       {/* Thumb */}
-                      <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 border border-border/60 overflow-hidden shrink-0 flex items-center justify-center">
+                      <div className="w-14 h-14 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 overflow-hidden shrink-0 flex items-center justify-center">
                         {item.imageUrl ? (
                           <img
                             src={item.imageUrl}
@@ -214,45 +253,45 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <Package className="w-6 h-6 text-slate-400 opacity-60" />
+                          <Package className="w-5 h-5 text-neutral-400 opacity-60" />
                         )}
                       </div>
 
                       {/* Info */}
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center justify-between gap-2">
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                          <h4 className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">
                             {item.productName}
                           </h4>
-                          <span className="text-xs font-bold text-[#17c1e8] tabular-nums shrink-0">
+                          <span className="text-xs font-mono font-semibold text-neutral-900 dark:text-neutral-100 tabular-nums shrink-0">
                             {formatVND(item.price * item.quantity)}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                          <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-medium">
-                            {item.color} / {item.size}
+                        <div className="flex items-center gap-2 text-[11px] text-neutral-500">
+                          <span className="bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 px-1.5 py-0.5 rounded font-mono text-[10px]">
+                            {item.color} • {item.size}
                           </span>
-                          <span>Đơn giá: {formatVND(item.price)}</span>
+                          <span className="font-mono">Đơn giá: {formatVND(item.price)}</span>
                         </div>
 
                         {/* Controls */}
                         <div className="flex items-center justify-between pt-1">
-                          <div className="flex items-center border border-border/60 rounded-lg overflow-hidden bg-background">
+                          <div className="flex items-center border border-neutral-200 dark:border-neutral-800 rounded-md overflow-hidden bg-white dark:bg-neutral-900">
                             <button
                               type="button"
                               onClick={() => cartService.updateQuantity(item.variantId, -1)}
-                              className="px-2 py-0.5 hover:bg-muted text-slate-600 dark:text-slate-300 transition-colors"
+                              className="px-2 py-0.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
-                            <span className="px-2 text-xs font-bold tabular-nums min-w-[24px] text-center">
+                            <span className="px-2 text-xs font-mono font-medium tabular-nums min-w-[24px] text-center">
                               {item.quantity}
                             </span>
                             <button
                               type="button"
                               onClick={() => cartService.updateQuantity(item.variantId, 1)}
-                              className="px-2 py-0.5 hover:bg-muted text-slate-600 dark:text-slate-300 transition-colors"
+                              className="px-2 py-0.5 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -261,7 +300,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                           <button
                             type="button"
                             onClick={() => cartService.removeItem(item.variantId)}
-                            className="text-slate-400 hover:text-red-500 text-xs p-1 transition-colors"
+                            className="text-neutral-400 hover:text-rose-600 text-xs p-1 transition-colors"
                             title="Xóa khỏi giỏ"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -274,14 +313,14 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
               </div>
 
               {/* Right Column: Checkout Info */}
-              <div className="lg:col-span-5 space-y-4">
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3.5">
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 uppercase tracking-wider">
-                    <MapPin className="w-3.5 h-3.5 text-[#17c1e8]" />
+              <div className="lg:col-span-5 space-y-3">
+                <div className="p-3.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3">
+                  <h3 className="text-xs font-semibold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5 uppercase tracking-wider">
+                    <MapPin className="w-3.5 h-3.5 text-neutral-500" />
                     Địa chỉ nhận hàng
                   </h3>
 
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <div className="space-y-1">
                       <Label htmlFor="ship-name" className="text-xs">Họ tên người nhận *</Label>
                       <Input
@@ -290,7 +329,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                         value={shippingInfo.name}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, name: e.target.value })}
                         required
-                        className="h-8 text-xs bg-background"
+                        className="h-8 text-xs rounded-md bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800"
                       />
                     </div>
 
@@ -302,7 +341,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                         value={shippingInfo.phone}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, phone: e.target.value })}
                         required
-                        className="h-8 text-xs bg-background"
+                        className="h-8 text-xs rounded-md bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800"
                       />
                     </div>
 
@@ -313,7 +352,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                         placeholder="Số nhà, đường, quận/huyện, TP..."
                         value={shippingInfo.address}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, address: e.target.value })}
-                        className="h-8 text-xs bg-background"
+                        className="h-8 text-xs rounded-md bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800"
                       />
                     </div>
 
@@ -324,21 +363,21 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                         placeholder="Giao giờ hành chính, gọi trước..."
                         value={shippingInfo.note}
                         onChange={(e) => setShippingInfo({ ...shippingInfo, note: e.target.value })}
-                        className="h-8 text-xs bg-background"
+                        className="h-8 text-xs rounded-md bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Summary Box */}
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#17c1e8]/10 via-slate-900 to-slate-900 border border-[#17c1e8]/30 space-y-3">
-                  <div className="flex items-center justify-between text-xs text-slate-300">
+                <div className="p-3.5 rounded-lg bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3">
+                  <div className="flex items-center justify-between text-xs text-neutral-500">
                     <span>Số lượng đã chọn:</span>
-                    <strong className="text-white font-bold">{totalCount} món</strong>
+                    <strong className="font-mono text-neutral-900 dark:text-neutral-100">{totalCount} món</strong>
                   </div>
-                  <div className="flex items-center justify-between border-t border-border/40 pt-2 text-sm">
-                    <span className="font-medium text-slate-200">Tổng thanh toán:</span>
-                    <span className="text-lg font-extrabold text-[#17c1e8] tabular-nums">
+                  <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 pt-2 text-sm">
+                    <span className="font-medium text-neutral-700 dark:text-neutral-300">Tổng thanh toán:</span>
+                    <span className="text-base font-bold font-mono tracking-tight text-neutral-900 dark:text-neutral-100">
                       {formatVND(totalPrice)}
                     </span>
                   </div>
@@ -346,7 +385,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                   <Button
                     type="submit"
                     disabled={isSubmitting || selectedItems.length === 0}
-                    className="w-full bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 rounded-xl h-10 font-bold shadow-lg shadow-[#17c1e8]/25"
+                    className="w-full rounded-md bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] h-9 font-bold text-xs sm:text-sm shadow-sm"
                   >
                     {isSubmitting ? (
                       <Loader2 className="w-4 h-4 mr-2 animate-spin text-slate-950" />

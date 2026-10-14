@@ -74,47 +74,50 @@ function StatCard({
   value,
   change,
   icon: Icon,
-  iconColor,
   suffix,
 }: {
   title: string;
   value: string | number;
   change?: number;
   icon: React.ElementType;
-  iconColor: string;
+  iconColor?: string;
   suffix?: string;
 }) {
   return (
-    <Card className="border-border/40 bg-card/50 backdrop-blur-sm hover:shadow-md transition-shadow">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold text-foreground">
+    <Card className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors">
+      <CardContent className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="space-y-1.5 min-w-0">
+            <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">{title}</p>
+            <p className="text-2xl font-bold font-mono tracking-tight text-neutral-900 dark:text-neutral-100">
               {value}
               {suffix && (
-                <span className="text-base font-normal text-muted-foreground ml-1">
+                <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400 ml-1 font-sans">
                   {suffix}
                 </span>
               )}
             </p>
             {change !== undefined && (
-              <div
-                className={`flex items-center gap-1 text-xs font-medium ${
-                  change >= 0 ? "text-emerald-400" : "text-red-400"
-                }`}
-              >
-                {change >= 0 ? (
-                  <TrendingUp className="w-3 h-3" />
-                ) : (
-                  <TrendingDown className="w-3 h-3" />
-                )}
-                {Math.abs(change)}% so với tháng trước
+              <div className="pt-0.5">
+                <span
+                  className={`inline-flex items-center gap-1 text-xs font-mono font-medium px-1.5 py-0.5 rounded ${
+                    change >= 0
+                      ? "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400"
+                      : "text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-400"
+                  }`}
+                >
+                  {change >= 0 ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : (
+                    <TrendingDown className="w-3 h-3" />
+                  )}
+                  {Math.abs(change)}% so với tháng trước
+                </span>
               </div>
             )}
           </div>
-          <div className={`p-3 rounded-xl ${iconColor}`}>
-            <Icon className="w-5 h-5" />
+          <div className="p-2 rounded-md border border-[#17c1e8]/30 bg-[#17c1e8]/10 text-[#0c8ba8] dark:text-[#17c1e8] shrink-0">
+            <Icon className="w-4 h-4 text-[#17c1e8]" />
           </div>
         </div>
       </CardContent>
@@ -160,10 +163,10 @@ export default function DashboardPage() {
   if (role === null) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto">
-        <Skeleton className="h-44 w-full rounded-3xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Skeleton className="h-32 w-full rounded-lg" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-72 rounded-2xl" />
+            <Skeleton key={i} className="h-64 rounded-lg" />
           ))}
         </div>
       </div>
@@ -176,19 +179,19 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {}
+      {/* Page Title */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Tổng quan</h1>
-        <p suppressHydrationWarning className="text-muted-foreground text-sm mt-1">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">Tổng quan</h1>
+        <p suppressHydrationWarning className="text-neutral-500 dark:text-neutral-400 text-xs sm:text-sm mt-0.5">
           {format(new Date(), "EEEE, dd MMMM yyyy", { locale: vi })}
         </p>
       </div>
 
-      {}
+      {/* KPI Stats */}
       {statsLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
+            <Skeleton key={i} className="h-28 rounded-lg" />
           ))}
         </div>
       ) : (
@@ -198,77 +201,65 @@ export default function DashboardPage() {
             value={formatVND(stats?.totalRevenue ?? 0)}
             change={stats?.revenueChange}
             icon={DollarSign}
-            iconColor="bg-[#17c1e8]/10 text-[#17c1e8]"
           />
           <StatCard
             title="Tổng đơn hàng"
             value={stats?.totalOrders ?? 0}
             change={stats?.ordersChange}
             icon={ShoppingCart}
-            iconColor="bg-blue-500/10 text-blue-400"
             suffix="đơn"
           />
           <StatCard
             title="Đơn chờ xử lý"
             value={stats?.pendingOrders ?? 0}
             icon={Package}
-            iconColor="bg-amber-500/10 text-amber-400"
             suffix="đơn"
           />
           <StatCard
             title="Hội thoại đang hoạt động"
             value={stats?.activeConversations ?? 0}
             icon={MessageSquare}
-            iconColor="bg-emerald-500/10 text-emerald-400"
             suffix="cuộc"
           />
         </div>
       )}
 
-      {}
+      {/* Secondary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard
           title="Khách hàng"
           value={stats?.totalCustomers ?? 0}
           icon={Users}
-          iconColor="bg-cyan-500/10 text-cyan-400"
           suffix="người"
         />
         <StatCard
           title="Sản phẩm sắp hết hàng"
           value={stats?.lowStockCount ?? 0}
           icon={AlertTriangle}
-          iconColor="bg-red-500/10 text-red-400"
           suffix="SKU"
         />
       </div>
 
-      {}
-      <Card className="border-border/40 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold">
+      {/* Chart Section */}
+      <Card className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm">
+        <CardHeader className="pb-2 border-b border-neutral-200 dark:border-neutral-800 py-3 px-5">
+          <CardTitle className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
             Doanh thu 14 ngày gần nhất
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4 p-5">
           <ChartContainer config={chartConfig} className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={chartData ?? []}
                 margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
               >
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="2 2" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                   tickLine={false}
-                  axisLine={false}
+                  axisLine={{ stroke: "hsl(var(--border))" }}
                 />
                 <YAxis
                   tickFormatter={(v) =>
@@ -282,9 +273,10 @@ export default function DashboardPage() {
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="hsl(var(--chart-1))"
+                  stroke="#17c1e8"
                   strokeWidth={2}
-                  fill="url(#colorRevenue)"
+                  fill="#17c1e8"
+                  fillOpacity={0.15}
                 />
               </AreaChart>
             </ResponsiveContainer>

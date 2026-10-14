@@ -32,7 +32,7 @@ class ToolService:
             return {"found": False, "message": "Ảnh không hợp lệ hoặc không thể đọc."}
 
         rows = self.db_service.query_by_vector(embedding, top_k=1)
-        if not rows or rows[0]["similarity"] < 0.9:
+        if not rows or rows[0]["similarity"] < 0.65:
             return {"found": False, "message": "Không tìm thấy sản phẩm tương tự."}
 
         return {"found": True, "results": rows}

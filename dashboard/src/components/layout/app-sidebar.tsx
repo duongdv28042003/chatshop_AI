@@ -139,24 +139,27 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         render={<Link href={item.href} />}
                         isActive={active}
-                        className="group relative h-9 rounded-lg transition-all duration-150"
+                        className={`group relative h-8.5 rounded-md text-xs transition-colors px-2.5 ${
+                          active
+                            ? "bg-[#17c1e8]/10 text-neutral-900 dark:text-neutral-100 font-bold"
+                            : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100/70 dark:hover:bg-neutral-800/70 hover:text-neutral-900 dark:hover:text-neutral-100"
+                        }`}
                       >
                         <item.icon
                           className={`w-4 h-4 flex-shrink-0 transition-colors ${
                             active
                               ? "text-[#17c1e8]"
-                              : "text-muted-foreground group-hover:text-foreground"
+                              : "text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-neutral-100"
                           }`}
                         />
-                        <span
-                          className={`text-sm font-medium ${
-                            active ? "text-foreground font-semibold" : "text-muted-foreground group-hover:text-foreground"
-                          }`}
-                        >
+                        <span className="text-xs">
                           {item.title}
                         </span>
                         {active && (
-                          <ChevronRight className="ml-auto w-3.5 h-3.5 text-[#17c1e8]" />
+                          <>
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-[#17c1e8] rounded-r-full" />
+                            <ChevronRight className="ml-auto w-3 h-3 text-[#17c1e8]" />
+                          </>
                         )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>

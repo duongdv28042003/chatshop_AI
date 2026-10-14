@@ -1,16 +1,27 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  if (typeof window !== "undefined") {
+    if (window.location.hostname !== "localhost") {
+      return `${window.location.origin}/api`;
+    }
+    return "http://localhost:5000/api";
+  }
+  return "http://localhost:5000/api";
+}
 
 export const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: getBaseUrl(),
   headers: { "Content-Type": "application/json" },
   timeout: 10000,
 });
 
 apiClient.interceptors.request.use((config) => {
+  if (typeof window !== "undefined" && !config.baseURL) {
+    config.baseURL = getBaseUrl();
+  }
   const token = Cookies.get("access_token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

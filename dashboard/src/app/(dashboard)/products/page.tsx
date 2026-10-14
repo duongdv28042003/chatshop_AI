@@ -106,6 +106,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(defaultFormData);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [customImageUrl, setCustomImageUrl] = useState("");
 
   const { data: products, isLoading } = useQuery({
@@ -136,26 +137,37 @@ export default function ProductsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
+      // 1. Sắp xếp ảnh: Đưa ảnh chính lên vị trí đầu tiên (index 0)
+      // Điều này đảm bảo backend luôn chỉ nhận và lưu đúng 1 ảnh chính duy nhất, tránh lỗi 500
+      const primaryIndex = data.images.findIndex((img) => img.isPrimary);
+      const reorderedImages = [...data.images];
+      if (primaryIndex > 0) {
+        const [primaryImg] = reorderedImages.splice(primaryIndex, 1);
+        reorderedImages.unshift(primaryImg);
+      }
+
+      const cleanImages = reorderedImages.map((img, idx) => ({
+        id: img.id,
+        imageUrl: img.imageUrl,
+        isPrimary: idx === 0,
+      }));
+
       const payload = {
-        code: data.code,
-        name: data.name,
+        code: data.code.trim().toUpperCase(),
+        name: data.name.trim(),
         categoryId: data.categoryId || null,
         description: data.description,
         isActive: data.isActive,
         variants: data.variants.map((v) => ({
           id: v.id,
-          sku: v.sku || `${data.code}-${v.color}-${v.size}`,
-          color: v.color,
-          size: v.size,
+          sku: v.sku || `${data.code.trim().toUpperCase()}-${v.color.trim().toUpperCase()}-${v.size.trim().toUpperCase()}`,
+          color: v.color.trim(),
+          size: v.size.trim().toUpperCase(),
           price: Number(v.price),
           stock: Number(v.stock),
           isActive: true,
         })),
-        images: data.images.map((img, idx) => ({
-          id: img.id,
-          imageUrl: img.imageUrl,
-          isPrimary: img.isPrimary || (idx === 0 && !data.images.some((i) => i.isPrimary)),
-        })),
+        images: cleanImages,
       };
 
       if (data.id) {
@@ -172,7 +184,7 @@ export default function ProductsPage() {
       setFormData(defaultFormData);
     },
     onError: (err: any) => {
-      const msg = err.response?.data?.message || "Không thể lưu sản phẩm";
+      const msg = err.response?.data?.message || err.message || "Không thể lưu sản phẩm";
       toast.error(msg);
     },
   });
@@ -188,58 +200,70 @@ export default function ProductsPage() {
     onError: () => toast.error("Xóa sản phẩm thất bại"),
   });
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const uploadFormData = new FormData();
-    uploadFormData.append("file", file);
+  const handleFiles = async (files: File[]) => {
+    if (!files || files.length === 0) return;
 
     setIsUploadingImage(true);
-    try {
-      const { data } = await apiClient.post<{ imageUrl: string }>(
-        "/products/upload-image",
-        uploadFormData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
+    let successCount = 0;
+
+    for (const file of files) {
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+
+      try {
+        const { data } = await apiClient.post<{ imageUrl: string }>(
+          "/products/upload-image",
+          uploadFormData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        if (data?.imageUrl) {
+          setFormData((prev) => ({
+            ...prev,
+            images: [
+              ...prev.images,
+              {
+                imageUrl: data.imageUrl,
+                isPrimary: prev.images.length === 0 && successCount === 0,
+              },
+            ],
+          }));
+          successCount++;
         }
-      );
-
-      if (data?.imageUrl) {
-        setFormData((prev) => ({
-          ...prev,
-          images: [
-            ...prev.images,
-            {
-              imageUrl: data.imageUrl,
-              isPrimary: prev.images.length === 0,
-            },
-          ],
-        }));
-        toast.success("Đã tải ảnh lên thành công");
+      } catch {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const localUrl = event.target?.result as string;
+          if (localUrl) {
+            setFormData((prev) => ({
+              ...prev,
+              images: [
+                ...prev.images,
+                {
+                  imageUrl: localUrl,
+                  isPrimary: prev.images.length === 0,
+                },
+              ],
+            }));
+          }
+        };
+        reader.readAsDataURL(file);
+        successCount++;
       }
-    } catch {
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const localUrl = event.target?.result as string;
-        setFormData((prev) => ({
-          ...prev,
-          images: [
-            ...prev.images,
-            {
-              imageUrl: localUrl,
-              isPrimary: prev.images.length === 0,
-            },
-          ],
-        }));
-        toast.success("Đã thêm ảnh xem trước");
-      };
-      reader.readAsDataURL(file);
-    } finally {
-      setIsUploadingImage(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
+
+    if (successCount > 0) {
+      toast.success(`Đã thêm ${successCount} ảnh vào sản phẩm`);
+    }
+    setIsUploadingImage(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    handleFiles(files);
   };
 
   const handleAddImageUrl = () => {
@@ -376,9 +400,9 @@ export default function ProductsPage() {
         </div>
         <Button
           onClick={openCreateDialog}
-          className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 font-bold shadow-lg shadow-[#17c1e8]/20"
+          className="bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold rounded-md text-xs h-9 shadow-sm"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-4 h-4 mr-2 text-slate-950" />
           Thêm sản phẩm
         </Button>
       </div>
@@ -436,7 +460,7 @@ export default function ProductsPage() {
                       className="border-border/40 hover:bg-muted/30 transition-colors"
                     >
                       <TableCell>
-                        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 border border-border/50 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="relative w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 border border-border/50 flex items-center justify-center overflow-hidden shrink-0">
                           {primaryImg ? (
                             <img
                               src={primaryImg}
@@ -446,9 +470,14 @@ export default function ProductsPage() {
                           ) : (
                             <ImageIcon className="w-4 h-4 text-slate-400" />
                           )}
+                          {product.images && product.images.length > 1 && (
+                            <span className="absolute bottom-0 right-0 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-[9px] font-mono font-bold px-1 rounded-tl-md">
+                              +{product.images.length - 1}
+                            </span>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-sm font-bold text-[#17c1e8]">
+                      <TableCell className="font-mono text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                         {product.code}
                       </TableCell>
                       <TableCell>
@@ -552,7 +581,7 @@ export default function ProductsPage() {
         <DialogContent className="sm:max-w-5xl w-[95vw] max-h-[92vh] overflow-y-auto p-6">
           <DialogHeader className="pb-3 border-b border-border/40">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#17c1e8]" />
+              <Layers className="w-5 h-5 text-neutral-500" />
               {editingProduct ? `Chỉnh sửa sản phẩm: ${editingProduct.code}` : "Thêm sản phẩm mới"}
             </DialogTitle>
           </DialogHeader>
@@ -560,6 +589,24 @@ export default function ProductsPage() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              // Kiểm tra biến thể trùng lặp Màu sắc & Size trước khi gửi
+              const seenVariants = new Set<string>();
+              for (let i = 0; i < formData.variants.length; i++) {
+                const v = formData.variants[i];
+                const c = v.color.trim().toLowerCase();
+                const s = v.size.trim().toLowerCase();
+                if (!c || !s) {
+                  toast.error(`Biến thể #${i + 1} chưa điền đầy đủ Màu sắc và Size!`);
+                  return;
+                }
+                const key = `${c}-${s}`;
+                if (seenVariants.has(key)) {
+                  toast.error(`Trùng lặp: Màu "${v.color}" và Size "${v.size}" đã có ở biến thể khác! Vui lòng điều chỉnh.`);
+                  return;
+                }
+                seenVariants.add(key);
+              }
+
               saveMutation.mutate(formData);
             }}
             className="space-y-6 pt-4"
@@ -571,7 +618,7 @@ export default function ProductsPage() {
               <div className="lg:col-span-5 space-y-4">
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3.5">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Package className="w-4 h-4 text-[#17c1e8]" />
+                    <Package className="w-4 h-4 text-neutral-500" />
                     Thông tin cơ bản
                   </h3>
 
@@ -593,7 +640,7 @@ export default function ProductsPage() {
                         id="prod-cat"
                         value={formData.categoryId}
                         onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                        className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#17c1e8]"
+                        className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
                       >
                         <option value="">-- Chọn danh mục --</option>
                         {(categories ?? []).map((c) => (
@@ -623,7 +670,7 @@ export default function ProductsPage() {
                       id="prod-status"
                       value={formData.isActive ? "true" : "false"}
                       onChange={(e) => setFormData({ ...formData, isActive: e.target.value === "true" })}
-                      className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#17c1e8]"
+                      className="w-full h-9 px-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
                     >
                       <option value="true">Đang kinh doanh (Active)</option>
                       <option value="false">Tạm ngưng bán (Inactive)</option>
@@ -638,16 +685,16 @@ export default function ProductsPage() {
                       placeholder="Chất liệu thoáng mát, co giãn, form rộng dễ phối đồ..."
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full p-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-[#17c1e8]"
+                      className="w-full p-2.5 bg-background border border-input rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-600"
                     />
                   </div>
                 </div>
 
                 {/* Images Manager */}
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 border border-border/50 space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 text-[#17c1e8]" />
+                      <ImageIcon className="w-4 h-4 text-neutral-500" />
                       Hình ảnh sản phẩm
                     </h3>
                     <span className="text-[11px] text-muted-foreground">
@@ -655,30 +702,51 @@ export default function ProductsPage() {
                     </span>
                   </div>
 
-                  {/* Dropzone Upload Box */}
+                  {/* Dropzone Upload Box with Drag & Drop & Multiple */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-[#17c1e8]/40 hover:border-[#17c1e8] rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer bg-[#17c1e8]/5 hover:bg-[#17c1e8]/10 transition-colors"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDraggingOver(true);
+                    }}
+                    onDragLeave={(e) => {
+                      e.preventDefault();
+                      setIsDraggingOver(false);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDraggingOver(false);
+                      const files = Array.from(e.dataTransfer.files || []).filter((f) =>
+                        f.type.startsWith("image/")
+                      );
+                      handleFiles(files);
+                    }}
+                    className={`border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center cursor-pointer transition-colors ${
+                      isDraggingOver
+                        ? "border-neutral-900 bg-neutral-100 dark:border-neutral-100 dark:bg-neutral-800"
+                        : "border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 bg-neutral-50/50 dark:bg-neutral-900/50"
+                    }`}
                   >
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
+                      multiple
                       onChange={handleFileUpload}
                       className="hidden"
                     />
                     {isUploadingImage ? (
-                      <div className="flex items-center gap-2 text-xs text-[#17c1e8] font-medium">
-                        <Loader2 className="w-4 h-4 animate-spin text-[#17c1e8]" /> Đang tải ảnh...
+                      <div className="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 font-medium">
+                        <Loader2 className="w-4 h-4 animate-spin text-neutral-500" /> Đang tải các ảnh lên...
                       </div>
                     ) : (
                       <>
-                        <Upload className="w-6 h-6 text-[#17c1e8] mb-1" />
+                        <Upload className="w-6 h-6 text-neutral-400 mb-1" />
                         <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                          Bấm để tải ảnh từ máy tính
+                          Bấm để tải hoặc kéo thả nhiều ảnh cùng lúc
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          Hỗ trợ định dạng JPG, PNG, WEBP
+                        <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">
+                          Hỗ trợ định dạng JPG, PNG, WEBP (chọn nhiều ảnh)
                         </p>
                       </>
                     )}
@@ -705,12 +773,12 @@ export default function ProductsPage() {
 
                   {/* Image Previews */}
                   {formData.images.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2.5 pt-1">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 pt-1">
                       {formData.images.map((img, idx) => (
                         <div
                           key={idx}
-                          className={`relative group rounded-xl overflow-hidden border-2 aspect-square bg-slate-100 dark:bg-slate-800 ${
-                            img.isPrimary ? "border-[#17c1e8] shadow-md shadow-[#17c1e8]/20" : "border-border/60"
+                          className={`relative group rounded-md overflow-hidden border aspect-square bg-neutral-100 dark:bg-neutral-800 ${
+                            img.isPrimary ? "border-neutral-900 dark:border-neutral-100 ring-1 ring-neutral-900 dark:ring-neutral-100" : "border-neutral-200 dark:border-neutral-800"
                           }`}
                         >
                           <img
@@ -719,9 +787,14 @@ export default function ProductsPage() {
                             className="w-full h-full object-cover"
                           />
 
+                          {/* Index badge */}
+                          <span className="absolute bottom-1 right-1 bg-black/70 text-neutral-200 text-[9px] font-mono px-1 rounded">
+                            #{idx + 1}
+                          </span>
+
                           {img.isPrimary && (
-                            <span className="absolute top-1 left-1 bg-[#17c1e8] text-slate-950 text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-sm">
-                              <Star className="w-2.5 h-2.5 fill-slate-950" /> Chính
+                            <span className="absolute top-1 left-1 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5 shadow-sm">
+                              <Star className="w-2.5 h-2.5 fill-current" /> Chính
                             </span>
                           )}
 
@@ -758,11 +831,11 @@ export default function ProductsPage() {
 
               {/* Right Column: Variants Manager */}
               <div className="lg:col-span-7 space-y-4">
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-border/50 space-y-3.5 h-full flex flex-col">
+                <div className="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-900/50 border border-border/50 space-y-3.5 h-full flex flex-col">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Layers className="w-4 h-4 text-[#17c1e8]" />
+                        <Layers className="w-4 h-4 text-neutral-500" />
                         Danh sách Biến thể (Màu / Size / Giá / Tồn kho)
                       </h3>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -773,7 +846,7 @@ export default function ProductsPage() {
                       type="button"
                       size="sm"
                       onClick={addVariant}
-                      className="bg-[#17c1e8] hover:bg-cyan-400 text-slate-950 font-bold h-8 px-3 text-xs shadow-sm"
+                      className="bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-200 font-medium h-8 px-3 text-xs rounded-md shadow-sm"
                     >
                       <Plus className="w-3.5 h-3.5 mr-1" /> Thêm biến thể
                     </Button>
@@ -784,9 +857,9 @@ export default function ProductsPage() {
                     {formData.variants.map((variant, idx) => (
                       <div
                         key={idx}
-                        className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-border/60 shadow-sm flex items-center gap-3 hover:border-[#17c1e8]/40 transition-colors"
+                        className="p-3 bg-white dark:bg-neutral-900 rounded-md border border-neutral-200 dark:border-neutral-800 shadow-sm flex items-center gap-3 hover:border-neutral-400 dark:hover:border-neutral-600 transition-colors"
                       >
-                        <div className="w-6 h-6 rounded-full bg-cyan-500/10 text-[#17c1e8] text-xs font-bold flex items-center justify-center shrink-0 border border-[#17c1e8]/20">
+                        <div className="w-6 h-6 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 text-xs font-mono font-medium flex items-center justify-center shrink-0 border border-neutral-200 dark:border-neutral-700">
                           {idx + 1}
                         </div>
 
@@ -869,7 +942,7 @@ export default function ProductsPage() {
               <Button
                 type="submit"
                 disabled={saveMutation.isPending}
-                className="bg-gradient-to-r from-[#17c1e8] to-cyan-600 hover:from-cyan-400 hover:to-[#17c1e8] text-slate-950 font-bold shadow-md shadow-[#17c1e8]/20 px-6"
+                className="bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold rounded-md shadow-sm px-6 h-9 text-xs"
               >
                 {saveMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin text-slate-950" />}
                 {editingProduct ? "Lưu thay đổi sản phẩm" : "Hoàn tất tạo sản phẩm"}
@@ -891,7 +964,7 @@ export default function ProductsPage() {
           <div className="py-2">
             <p className="text-sm text-slate-700 dark:text-slate-300">
               Bạn có chắc chắn muốn xóa sản phẩm{" "}
-              <strong className="text-[#17c1e8] font-bold">
+              <strong className="text-neutral-900 dark:text-neutral-100 font-mono font-bold">
                 {productToDelete?.code} - {productToDelete?.name}
               </strong>{" "}
               không?
