@@ -126,7 +126,7 @@ function StatCard({
 }
 
 export default function DashboardPage() {
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<string>("customer");
 
   useEffect(() => {
     setRole(authService.getRole());
@@ -159,19 +159,6 @@ export default function DashboardPage() {
       }
     },
   });
-
-  if (role === null) {
-    return (
-      <div className="space-y-6 max-w-7xl mx-auto">
-        <Skeleton className="h-32 w-full rounded-lg" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-64 rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   if (role === "customer") {
     return <CustomerStorefront />;

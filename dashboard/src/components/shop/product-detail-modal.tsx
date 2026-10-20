@@ -28,6 +28,7 @@ import {
   getDistinctColors,
   getDistinctSizes,
   findMatchingVariant,
+  normalizeImageUrl,
 } from "@/lib/product-utils";
 
 function formatVND(amount: number): string {
@@ -99,7 +100,7 @@ export function ProductDetailModal({
   const currentPrice = currentVariant?.price ?? variants[0]?.price ?? 0;
   const inStock = currentVariant ? currentVariant.stock > 0 : false;
   const currentStock = currentVariant?.stock ?? 0;
-  const activeImage = images[activeImageIndex]?.imageUrl;
+  const activeImage = normalizeImageUrl(images[activeImageIndex]?.imageUrl);
 
   // Xử lý khi khách chọn đổi Màu
   const handleColorChange = (newColor: string) => {
@@ -268,7 +269,7 @@ export function ProductDetailModal({
                         }`}
                       >
                         <img
-                          src={img.imageUrl}
+                          src={normalizeImageUrl(img.imageUrl)}
                           alt={`Thumbnail ${idx + 1}`}
                           className="w-full h-full object-cover"
                         />

@@ -14,6 +14,15 @@ export function normalizeText(text?: string | null): string {
 }
 
 /**
+ * Chuẩn hóa URL ảnh: nếu URL chứa localhost:5000 hoặc 127.0.0.1:5000 do backend trả về,
+ * chuyển thành đường dẫn relative (/uploads/...) để mọi thiết bị truy cập từ xa qua mạng LAN đều tải được.
+ */
+export function normalizeImageUrl(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  return url.replace(/^http:\/\/(?:localhost|127\.0\.0\.1):5000/, "");
+}
+
+/**
  * Tìm ảnh phù hợp nhất với màu sắc của sản phẩm
  */
 export function findImageForColor(
@@ -25,7 +34,8 @@ export function findImageForColor(
   }
 
   const images = product.images;
-  const primaryImg = images.find((i) => i.isPrimary)?.imageUrl || images[0]?.imageUrl;
+  const rawPrimary = images.find((i) => i.isPrimary)?.imageUrl || images[0]?.imageUrl;
+  const primaryImg = normalizeImageUrl(rawPrimary);
 
   if (!color || color === "Tiêu chuẩn" || color === "Mặc định") {
     return primaryImg;
@@ -41,7 +51,7 @@ export function findImageForColor(
   });
 
   if (matchedByKeyword) {
-    return matchedByKeyword.imageUrl;
+    return normalizeImageUrl(matchedByKeyword.imageUrl);
   }
 
   // 2. Nếu số lượng ảnh tương ứng với số màu khác nhau, ghép theo thứ tự xuất hiện của màu
@@ -49,7 +59,7 @@ export function findImageForColor(
   const colorIndex = distinctColors.indexOf(color);
 
   if (colorIndex >= 0 && colorIndex < images.length) {
-    return images[colorIndex].imageUrl;
+    return normalizeImageUrl(images[colorIndex].imageUrl);
   }
 
   // 3. Fallback: Ảnh chính

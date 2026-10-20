@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/sidebar";
 import { authService, type UnifiedUser } from "@/lib/auth";
 import { BrandLogo } from "@/components/ui/brand-logo";
+import { SidebarContactLinks } from "@/components/layout/sidebar-contact-links";
 
 interface NavGroup {
   group: string;
@@ -171,18 +172,27 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      {/* Footer User Account */}
-      <SidebarFooter className="border-t border-border py-3">
-        <div className="flex items-center justify-between gap-2 px-3">
+      {/* Footer User Account & Social Links */}
+      <SidebarFooter className="border-t border-border p-0 bg-sidebar">
+        {/* Social & Contact Links with mini Google Map */}
+        <SidebarContactLinks />
+
+        {/* User Account info */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-t border-border">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-foreground truncate">
-              {user?.fullName || user?.name || "Người dùng"}
+            <p suppressHydrationWarning className="text-sm font-semibold text-foreground truncate">
+              {mounted ? (user?.fullName || user?.name || "Người dùng") : "Người dùng"}
+            </p>
+            <p suppressHydrationWarning className="text-[11px] text-muted-foreground font-mono truncate">
+              {mounted ? roleLabel : "Khách Hàng"}
             </p>
           </div>
           <button
+            type="button"
             onClick={() => authService.logout()}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-colors shrink-0"
             title="Đăng xuất"
+            suppressHydrationWarning
           >
             <LogOut className="w-4 h-4" />
           </button>

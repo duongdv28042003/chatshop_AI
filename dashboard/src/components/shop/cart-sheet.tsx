@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { cartService, type CartItem } from "@/lib/cart";
 import { authService, type UnifiedUser } from "@/lib/auth";
 import apiClient from "@/lib/api";
+import { normalizeImageUrl } from "@/lib/product-utils";
 
 function formatVND(amount: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -248,7 +249,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                       <div className="w-14 h-14 rounded-md bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-800 overflow-hidden shrink-0 flex items-center justify-center">
                         {item.imageUrl ? (
                           <img
-                            src={item.imageUrl}
+                            src={normalizeImageUrl(item.imageUrl)}
                             alt={item.productName}
                             className="w-full h-full object-cover"
                           />

@@ -14,6 +14,8 @@ import {
   Eye,
   ImageIcon,
   Search,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +26,7 @@ import apiClient from "@/lib/api";
 import { cartService } from "@/lib/cart";
 import { CartSheet } from "@/components/shop/cart-sheet";
 import { ProductDetailModal } from "@/components/shop/product-detail-modal";
-import { findImageForColor } from "@/lib/product-utils";
+import { findImageForColor, normalizeImageUrl } from "@/lib/product-utils";
 import type { Product, ProductVariant } from "@/types";
 
 function formatVND(amount: number) {
@@ -37,8 +39,9 @@ function formatVND(amount: number) {
 
 function ProductImage({ src, alt, code }: { src?: string; alt: string; code: string }) {
   const [hasError, setHasError] = useState(false);
+  const normalizedSrc = normalizeImageUrl(src);
 
-  if (!src || hasError) {
+  if (!normalizedSrc || hasError) {
     return (
       <div className="flex flex-col items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-300">
         <Shirt className="w-16 h-16 mb-2 opacity-30 text-neutral-400" />
@@ -51,7 +54,7 @@ function ProductImage({ src, alt, code }: { src?: string; alt: string; code: str
 
   return (
     <img
-      src={src}
+      src={normalizedSrc}
       alt={alt}
       onError={() => setHasError(true)}
       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -66,6 +69,13 @@ export function CustomerStorefront() {
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const ITEMS_PER_PAGE = 24;
+  const productsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, searchTerm]);
 
   // Draggable cart button state
   const [cartPosition, setCartPosition] = useState<{ x: number; y: number } | null>(null);
@@ -217,6 +227,44 @@ export function CustomerStorefront() {
     return matchesCategory && matchesSearch;
   });
 
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE) || 1;
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    productsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        for (let i = 1; i <= 5; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
   const handleAddToCart = (
     product: Product,
     customVariant?: ProductVariant,
@@ -299,7 +347,7 @@ export function CustomerStorefront() {
       </div>
 
       {/* Products Section */}
-      <div className="w-full min-w-0 space-y-4">
+      <div ref={productsRef} className="w-full min-w-0 space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
@@ -408,7 +456,7 @@ export function CustomerStorefront() {
           </div>
         ) : (
           <div className="storefront-product-grid">
-            {filteredProducts.map((product) => {
+            {paginatedProducts.map((product) => {
               const variants = product.variants ?? [];
               const selected = selectedVariants[product.id] || variants[0];
               const price = selected ? selected.price : variants[0]?.price || 0;
@@ -549,6 +597,59 @@ export function CustomerStorefront() {
                 </Card>
               );
             })}
+          </div>
+        )}
+
+        {/* E-Commerce Pagination Controller */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center pt-6 pb-2 border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                className="h-8 px-2.5 rounded-md text-xs font-mono border-neutral-200 dark:border-neutral-800 disabled:opacity-40"
+              >
+                <ChevronLeft className="w-3.5 h-3.5 mr-1" /> Trước
+              </Button>
+
+              {getPageNumbers().map((p, idx) => {
+                if (p === "...") {
+                  return (
+                    <span key={`dots-${idx}`} className="px-2 text-xs font-mono text-neutral-400">
+                      ...
+                    </span>
+                  );
+                }
+                const pageNum = Number(p);
+                const isActive = pageNum === currentPage;
+                return (
+                  <button
+                    key={pageNum}
+                    type="button"
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`h-8 min-w-8 px-2 rounded-md text-xs font-mono font-semibold transition-colors ${
+                      isActive
+                        ? "bg-[#17c1e8] text-slate-950 shadow-sm"
+                        : "bg-white dark:bg-neutral-900 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                className="h-8 px-2.5 rounded-md text-xs font-mono border-neutral-200 dark:border-neutral-800 disabled:opacity-40"
+              >
+                Sau <ChevronRight className="w-3.5 h-3.5 ml-1" />
+              </Button>
+            </div>
           </div>
         )}
       </div>

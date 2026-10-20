@@ -8,6 +8,7 @@ interface BrandLogoProps {
   showText?: boolean;
   subtitle?: string;
   lightText?: boolean;
+  darkEmblem?: boolean;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export function BrandLogo({
   showText = true,
   subtitle,
   lightText = false,
+  darkEmblem = false,
   className = "",
 }: BrandLogoProps) {
   const sizeMap = {
@@ -51,7 +53,11 @@ export function BrandLogo({
     <div className={`flex items-center gap-2.5 ${className}`}>
       {/* Emblem Icon - Clean Minimalist Monogram */}
       <div
-        className={`${s.box} bg-[#17c1e8] text-slate-950 border border-[#17c1e8]/30 shadow-sm flex items-center justify-center shrink-0`}
+        className={`${s.box} ${
+          darkEmblem
+            ? "bg-slate-950 text-[#17c1e8] border border-black/20"
+            : "bg-[#17c1e8] text-slate-950 border border-[#17c1e8]/30"
+        } shadow-sm flex items-center justify-center shrink-0`}
       >
         <svg
           viewBox="0 0 456 347"
@@ -86,6 +92,7 @@ export function BrandLogo({
           </div>
           {subtitle !== undefined ? (
             <span
+              suppressHydrationWarning
               className={`${s.sub} ${
                 lightText
                   ? "text-neutral-400"

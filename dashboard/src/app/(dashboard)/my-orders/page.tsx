@@ -24,10 +24,21 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import apiClient from "@/lib/api";
 import { authService } from "@/lib/auth";
-import { findImageForColor } from "@/lib/product-utils";
+import { findImageForColor, normalizeImageUrl } from "@/lib/product-utils";
 import type { Order, OrderStatus } from "@/types";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
+
+function formatSafeDate(dateStr?: string): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr.replace(" ", "T"));
+    if (isNaN(d.getTime())) return "";
+    return format(d, "dd/MM/yyyy HH:mm", { locale: vi });
+  } catch {
+    return "";
+  }
+}
 
 function OrderItemImage({
   images,
@@ -42,7 +53,8 @@ function OrderItemImage({
 }) {
   const [hasError, setHasError] = useState(false);
   const colorMatched = images && color ? findImageForColor({ images, variants: [] } as any, color) : undefined;
-  const primary = colorMatched || images?.find((img) => img.isPrimary)?.imageUrl || images?.[0]?.imageUrl;
+  const rawPrimary = colorMatched || images?.find((img) => img.isPrimary)?.imageUrl || images?.[0]?.imageUrl;
+  const primary = normalizeImageUrl(rawPrimary);
 
   if (!primary || hasError) {
     return (
@@ -138,7 +150,7 @@ export default function MyOrdersPage() {
   const filteredOrders = orders ?? [];
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl w-full mx-auto min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
@@ -152,7 +164,7 @@ export default function MyOrdersPage() {
 
       {/* Filter Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 sm:grid-cols-6 h-auto p-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-md gap-1">
+        <TabsList className="grid grid-cols-3 sm:grid-cols-6 w-full h-auto p-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-md gap-1">
           <TabsTrigger value="all" className="text-xs py-1.5 rounded-sm font-medium data-active:bg-[#17c1e8] data-active:text-slate-950 data-active:font-bold data-active:shadow-sm data-[state=active]:bg-[#17c1e8] data-[state=active]:text-slate-950 data-[state=active]:font-bold data-[state=active]:shadow-sm">
             Tất cả
           </TabsTrigger>
@@ -176,14 +188,14 @@ export default function MyOrdersPage() {
 
       {/* Orders List */}
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-36 rounded-lg w-full" />
           ))}
         </div>
       ) : filteredOrders.length === 0 ? (
-        <Card className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-center py-12 px-4 shadow-sm">
-          <CardContent className="flex flex-col items-center justify-center space-y-3">
+        <Card className="rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-center py-16 px-4 shadow-sm w-full min-h-[320px] flex items-center justify-center">
+          <CardContent className="w-full flex flex-col items-center justify-center space-y-3">
             <ShoppingBag className="w-10 h-10 text-[#17c1e8] opacity-60" />
             <div>
               <p className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">Không tìm thấy đơn hàng nào</p>
@@ -217,7 +229,7 @@ export default function MyOrdersPage() {
                       #{order.id.slice(0, 8).toUpperCase()}
                     </span>
                     <span className="text-[11px] font-mono text-neutral-500 hidden sm:inline">
-                      • {format(new Date(order.createdAt), "dd/MM/yyyy HH:mm", { locale: vi })}
+                      • {formatSafeDate(order.createdAt)}
                     </span>
                   </div>
                   <Badge className={`text-xs gap-1 font-mono font-medium rounded-full border px-2 py-0.5 ${statusCfg.className}`}>

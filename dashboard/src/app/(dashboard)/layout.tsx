@@ -23,7 +23,7 @@ export default function DashboardLayout({
         </header>
 
         {/* Content */}
-        <main className="flex-1 min-h-0 p-3 sm:p-5 md:p-6 min-w-0 overflow-x-hidden flex flex-col text-neutral-900 dark:text-neutral-100">{children}</main>
+        <div className="flex-1 min-h-0 p-3 sm:p-5 md:p-6 min-w-0 overflow-x-hidden flex flex-col text-neutral-900 dark:text-neutral-100">{children}</div>
 
         {}
         <FloatingAIAssistant />
