@@ -348,6 +348,8 @@ export function CustomerStorefront() {
 
       {/* Products Section */}
       <div ref={productsRef} className="w-full min-w-0 space-y-4">
+        {/* Sticky Filter Header Container */}
+        <div className="sticky top-14 z-20 -mx-3 sm:-mx-5 md:-mx-6 px-3 sm:px-5 md:px-6 py-2.5 sm:py-3 bg-neutral-50/95 dark:bg-neutral-950/95 backdrop-blur-md border-b border-neutral-200/80 dark:border-neutral-800/80 shadow-xs space-y-2.5 transition-all">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
@@ -413,6 +415,8 @@ export function CustomerStorefront() {
               className="w-full h-8 sm:h-9 pl-8 pr-3 rounded-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs text-neutral-900 dark:text-neutral-100 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 shadow-sm"
             />
           </div>
+        </div>
+
         </div>
 
         {/* Product Grid / Loading / Empty */}

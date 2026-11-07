@@ -265,6 +265,20 @@ COLOR_ALIASES: list[tuple[list[str], str]] = [
 ]
 
 
+class ChatResult(str):
+    reply: str
+    image_url: str | None
+
+    def __new__(cls, reply: str, image_url: str | None = None):
+        instance = super().__new__(cls, reply)
+        instance.reply = reply
+        instance.image_url = image_url
+        return instance
+
+    def __iter__(self):
+        return iter((self.reply, self.image_url))
+
+
 class LLMService:
     def __init__(self):
         self._model_name = LLM_MODEL
@@ -276,13 +290,28 @@ class LLMService:
         }
 
     def _call_llm(self, messages: list) -> object:
-        return litellm.completion(
-            model=self._model_name,
-            messages=messages,
-            tools=TOOLS,
-            timeout=10.0,
-            num_retries=0,
-        )
+        try:
+            return litellm.completion(
+                model=self._model_name,
+                messages=messages,
+                tools=TOOLS,
+                timeout=25.0,
+                num_retries=1,
+            )
+        except Exception as e:
+            # Tự động chuyển sang model flash-lite nếu model chính bị giới hạn quota 429
+            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+                fallback_model = "gemini/gemini-flash-lite-latest"
+                if self._model_name != fallback_model:
+                    print(f"[Quota Auto-Switch] Chuyển tạm sang {fallback_model} do {self._model_name} hết hạn mức")
+                    return litellm.completion(
+                        model=fallback_model,
+                        messages=messages,
+                        tools=TOOLS,
+                        timeout=25.0,
+                        num_retries=1,
+                    )
+            raise
 
     # ─────────────────────────────────────────────────────────────
     # Helpers
@@ -521,10 +550,11 @@ class LLMService:
     # ─────────────────────────────────────────────────────────────
     # Main chat entry
     # ─────────────────────────────────────────────────────────────
-    def chat(self, user_id: str, user_message: str, image_path: str = None) -> str:
+    def chat(self, user_id: str, user_message: str, image_path: str = None) -> ChatResult:
         self._memory.append(user_id, "user", user_message)
 
         answer = ""
+        found_image_url: str | None = None
         should_use_llm = False
         if self._model_name.startswith("ollama"):
             should_use_llm = is_ollama_alive()
@@ -551,6 +581,11 @@ class LLMService:
                         fn_args = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
 
                         tool_result = self._tool_map[fn_name](**fn_args)
+                        if isinstance(tool_result, dict) and tool_result.get("found") and tool_result.get("results"):
+                            for item in tool_result["results"]:
+                                if item.get("image_url") and not found_image_url:
+                                    found_image_url = item["image_url"]
+                                    break
 
                         messages.append({
                             "role": "tool",
@@ -561,10 +596,11 @@ class LLMService:
                     response = self._call_llm(messages)
 
                 answer = response.choices[0].message.content or ""
-            except Exception:
+            except Exception as e:
+                print(f"[LLM Exception] {e}")
                 answer = self._rule_based_fallback(user_id, user_message, image_path=image_path)
         else:
             answer = self._rule_based_fallback(user_id, user_message, image_path=image_path)
 
         self._memory.append(user_id, "assistant", answer)
-        return answer
+        return ChatResult(answer, found_image_url or self._last_fallback_image)
