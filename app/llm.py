@@ -288,6 +288,7 @@ class LLMService:
             "search_by_text": self._tools.search_by_text,
             "search_by_image": self._tools.search_by_image,
         }
+        self._last_fallback_image: str | None = None
 
     def _call_llm(self, messages: list) -> object:
         try:
@@ -603,4 +604,4 @@ class LLMService:
             answer = self._rule_based_fallback(user_id, user_message, image_path=image_path)
 
         self._memory.append(user_id, "assistant", answer)
-        return ChatResult(answer, found_image_url or self._last_fallback_image)
+        return ChatResult(answer, found_image_url or getattr(self, "_last_fallback_image", None))

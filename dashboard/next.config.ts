@@ -23,6 +23,10 @@ function getDevOrigins(): string[] {
   // Các IP đã dùng trước đó
   origins.add("192.168.2.158");
   origins.add("192.168.2.110");
+  origins.add("*.trycloudflare.com");
+  origins.add("trycloudflare.com");
+  origins.add("*.ngrok-free.app");
+  origins.add("*.loca.lt");
 
   return Array.from(origins);
 }
@@ -39,6 +43,10 @@ const nextConfig: NextConfig = {
       {
         source: "/uploads/:path*",
         destination: "http://localhost:5000/uploads/:path*",
+      },
+      {
+        source: "/webhook/zalo",
+        destination: "http://localhost:8000/webhook/zalo",
       },
     ];
   },
