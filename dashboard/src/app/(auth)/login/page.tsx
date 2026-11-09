@@ -15,6 +15,8 @@ import {
   User,
   Lock,
   ArrowRight,
+  Store,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +68,8 @@ export default function LoginPage() {
         toast.success(`Đăng nhập thành công với quyền ${role}!`);
       }
 
-      router.push("/");
+      // Điều hướng tải mới hoàn toàn để Next.js Server Components nhận cookie role chính xác ngay lập tức
+      window.location.href = "/";
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       toast.error(
@@ -78,30 +81,55 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6">
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-        {/* Left Side: Brand Showcase */}
-        <div className="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-6 pr-2">
-          <BrandLogo size="xl" subtitle="Thời Trang Công Nghệ" />
+    <div className="relative min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 overflow-hidden">
+      {/* 1. Background Image: Bãi biển nhiệt đới sắc nét */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=95')`,
+        }}
+      />
 
-          <div className="space-y-3">
-            <Badge className="bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 px-2.5 py-1 font-mono text-xs w-fit">
-              Boutique 2026
-            </Badge>
-            <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 leading-tight tracking-tight">
-              Thời Trang Cao Cấp & Trải Nghiệm Hiện Đại
-            </h2>
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed">
-              Đăng nhập để trải nghiệm không gian mua sắm cá nhân hóa, gợi ý phối đồ chuẩn size và theo dõi đơn hàng của bạn.
-            </p>
+      {/* 2. Gradient Overlay nhẹ nhàng, trong suốt, KHÔNG blur để giữ ảnh nét căng */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/65 via-slate-900/30 to-cyan-950/20" />
+
+      {/* 3. Nút bấm quay về cửa hàng nhanh */}
+      <div className="absolute top-5 left-5 z-20">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/30 hover:border-white/50 transition-all shadow-lg group"
+        >
+          <Store className="w-3.5 h-3.5 text-[#17c1e8] group-hover:-translate-x-0.5 transition-transform" />
+          <span>Về trang mua sắm</span>
+        </Link>
+      </div>
+
+      {/* 4. Khối nội dung chính */}
+      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        {/* Cột trái: Giới thiệu thương hiệu */}
+        <div className="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-6 pr-2">
+          <div className="backdrop-blur-md bg-black/45 p-7 rounded-2xl border border-white/20 shadow-2xl space-y-4 text-white">
+            <BrandLogo size="xl" subtitle="Thời Trang Công Nghệ" lightText />
+
+            <div className="space-y-3">
+              <Badge className="bg-white/20 backdrop-blur-md text-[#55dcf7] border-white/30 px-3 py-1 font-mono text-xs w-fit flex items-center gap-1.5 shadow-sm font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-[#17c1e8]" />
+                Boutique 2026 Collection
+              </Badge>
+              <h2 className="text-3xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
+                Thời Trang Cao Cấp & Trải Nghiệm Hiện Đại
+              </h2>
+              <p className="text-white/90 text-sm leading-relaxed drop-shadow-sm font-normal">
+                Đăng nhập để trải nghiệm không gian mua sắm cá nhân hóa, gợi ý phối đồ chuẩn size từ trợ lý AI và theo dõi đơn hàng của bạn.
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Right Side: Login Card */}
+        {/* Cột phải: Form Đăng Nhập Glassmorphism */}
         <div className="lg:col-span-7 w-full max-w-md mx-auto">
-          {/* Card Container */}
-          <div className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 shadow-sm">
-            {/* Header in Card */}
+          <div className="rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 p-7 sm:p-8 shadow-2xl shadow-black/40 transition-all">
+            {/* Header trong Card */}
             <div className="text-center mb-6 space-y-2">
               <div className="flex justify-center mb-2 lg:hidden">
                 <BrandLogo size="lg" />
@@ -109,7 +137,7 @@ export default function LoginPage() {
               <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
                 Đăng Nhập
               </h3>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Nhập tài khoản để tiếp tục mua sắm hoặc quản lý
               </p>
             </div>
@@ -122,7 +150,7 @@ export default function LoginPage() {
                   name="identifier"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                      <FormLabel className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                         Email hoặc Số điện thoại
                       </FormLabel>
                       <FormControl>
@@ -131,7 +159,7 @@ export default function LoginPage() {
                           <Input
                             {...field}
                             placeholder="Nhập email hoặc số điện thoại..."
-                            className="bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 h-9 rounded-md text-xs focus:border-neutral-400 dark:focus:border-neutral-600"
+                            className="bg-white/90 dark:bg-neutral-950/80 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 h-10 rounded-lg text-xs focus:border-[#17c1e8] focus:ring-1 focus:ring-[#17c1e8] transition-all shadow-inner"
                             disabled={loading}
                           />
                         </div>
@@ -147,7 +175,7 @@ export default function LoginPage() {
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex items-center justify-between">
-                        <FormLabel className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                        <FormLabel className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
                           Mật khẩu
                         </FormLabel>
                       </div>
@@ -158,7 +186,7 @@ export default function LoginPage() {
                             {...field}
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••"
-                            className="bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 pr-9 h-9 rounded-md text-xs focus:border-neutral-400 dark:focus:border-neutral-600"
+                            className="bg-white/90 dark:bg-neutral-950/80 border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 pl-9 pr-9 h-10 rounded-lg text-xs focus:border-[#17c1e8] focus:ring-1 focus:ring-[#17c1e8] transition-all shadow-inner"
                             disabled={loading}
                           />
                           <button
@@ -182,7 +210,7 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold h-9 rounded-md text-xs shadow-sm transition-colors"
+                  className="w-full mt-3 bg-gradient-to-r from-[#17c1e8] to-[#14a7c9] text-slate-950 hover:from-[#19d3fc] hover:to-[#17c1e8] font-bold h-10 rounded-lg text-xs shadow-lg shadow-[#17c1e8]/25 hover:shadow-[#17c1e8]/40 transition-all"
                 >
                   {loading ? (
                     <>
@@ -199,13 +227,13 @@ export default function LoginPage() {
               </form>
             </Form>
 
-            {/* Switch to Register */}
-            <div className="mt-6 text-center pt-2 border-t border-neutral-200 dark:border-neutral-800">
-              <p className="text-xs text-neutral-500">
+            {/* Chuyển hướng Đăng ký */}
+            <div className="mt-6 text-center pt-3 border-t border-neutral-200 dark:border-neutral-800">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Bạn chưa có tài khoản?{" "}
                 <Link
                   href="/register"
-                  className="text-neutral-900 dark:text-neutral-100 hover:underline font-medium inline-flex items-center gap-1 transition-colors ml-1"
+                  className="text-[#0c8ba8] dark:text-[#17c1e8] hover:underline font-bold inline-flex items-center gap-1 transition-colors ml-1"
                 >
                   Đăng ký ngay
                   <ArrowRight className="w-3.5 h-3.5" />

@@ -18,6 +18,8 @@ import {
   Mail,
   MapPin,
   ArrowRight,
+  Store,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,28 +90,54 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 py-12 px-4 sm:px-6">
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+    <div className="relative min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 overflow-hidden">
+      {/* 1. Background Image: Bãi biển nhiệt đới sắc nét */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=95')`,
+        }}
+      />
+
+      {/* 2. Gradient Overlay nhẹ nhàng, trong suốt, KHÔNG blur để giữ ảnh nét căng */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-slate-950/65 via-slate-900/30 to-cyan-950/20" />
+
+      {/* 3. Nút bấm quay về cửa hàng */}
+      <div className="absolute top-5 left-5 z-20">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/30 hover:border-white/50 transition-all shadow-lg group"
+        >
+          <Store className="w-3.5 h-3.5 text-[#17c1e8] group-hover:-translate-x-0.5 transition-transform" />
+          <span>Về trang mua sắm</span>
+        </Link>
+      </div>
+
+      {/* 4. Khối nội dung chính */}
+      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         {/* Left Side: Brand Showcase */}
         <div className="hidden lg:flex lg:col-span-5 flex-col justify-center space-y-6 pr-2">
-          <BrandLogo size="xl" subtitle="Thành Viên Khách Hàng" />
+          <div className="backdrop-blur-md bg-black/45 p-7 rounded-2xl border border-white/20 shadow-2xl space-y-4 text-white">
+            <BrandLogo size="xl" subtitle="Thành Viên Khách Hàng" lightText />
 
-          <div className="space-y-3">
-            <Badge className="bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-200 dark:border-neutral-700 px-2.5 py-1 font-mono text-xs w-fit">
-              Đặc Quyền Hội Viên
-            </Badge>
-            <h2 className="text-3xl font-bold text-neutral-900 dark:text-neutral-100 leading-tight tracking-tight">
-              Gia Nhập Để Nhận Ưu Đãi & Tư Vấn Độc Quyền
-            </h2>
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm leading-relaxed">
-              Đăng ký tài khoản nhanh chóng chỉ với số điện thoại để tích điểm nâng hạng thành viên và theo dõi đơn hàng tiện lợi.
-            </p>
+            <div className="space-y-3">
+              <Badge className="bg-white/20 backdrop-blur-md text-[#55dcf7] border-white/30 px-3 py-1 font-mono text-xs w-fit flex items-center gap-1.5 shadow-sm font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-[#17c1e8]" />
+                Đặc Quyền Hội Viên
+              </Badge>
+              <h2 className="text-3xl font-extrabold text-white leading-tight tracking-tight drop-shadow-md">
+                Gia Nhập Để Nhận Ưu Đãi & Tư Vấn Độc Quyền
+              </h2>
+              <p className="text-white/90 text-sm leading-relaxed drop-shadow-sm font-normal">
+                Đăng ký tài khoản nhanh chóng chỉ với số điện thoại để tích điểm nâng hạng thành viên và theo dõi đơn hàng tiện lợi.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Right Side: Register Card */}
         <div className="lg:col-span-7 w-full max-w-md mx-auto">
-          <div className="rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-8 shadow-sm">
+          <div className="rounded-2xl bg-white/90 dark:bg-neutral-900/90 backdrop-blur-2xl border border-white/50 dark:border-white/10 p-7 sm:p-8 shadow-2xl shadow-black/40 transition-all">
             <div className="text-center mb-6 space-y-2">
               <div className="flex justify-center mb-2 lg:hidden">
                 <BrandLogo size="lg" />
@@ -117,7 +145,7 @@ export default function RegisterPage() {
               <h3 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 tracking-tight">
                 Đăng Ký Tài Khoản
               </h3>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Tạo tài khoản khách hàng mới trong 30 giây
               </p>
             </div>
@@ -262,7 +290,7 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 bg-[#17c1e8] text-slate-950 hover:bg-[#15afcf] font-bold h-9 rounded-md text-xs shadow-sm transition-colors"
+                  className="w-full mt-2 bg-gradient-to-r from-[#17c1e8] to-[#14a7c9] text-slate-950 hover:from-[#19d3fc] hover:to-[#17c1e8] font-bold h-10 rounded-lg text-xs shadow-lg shadow-[#17c1e8]/25 hover:shadow-[#17c1e8]/40 transition-all"
                 >
                   {loading ? (
                     <>
@@ -280,11 +308,11 @@ export default function RegisterPage() {
             </Form>
 
             <div className="mt-5 text-center border-t border-neutral-200 dark:border-neutral-800 pt-3">
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Đã có tài khoản?{" "}
                 <Link
                   href="/login"
-                  className="text-neutral-900 dark:text-neutral-100 hover:underline font-medium inline-flex items-center gap-1 transition-colors ml-1"
+                  className="text-[#0c8ba8] dark:text-[#17c1e8] hover:underline font-bold inline-flex items-center gap-1 transition-colors ml-1"
                 >
                   Đăng nhập tại đây
                   <ArrowRight className="w-3.5 h-3.5" />

@@ -28,7 +28,7 @@ export const authService = {
     const { data } = await apiClient.post<any>("/auth/login", payload);
 
     if (data.accessToken) {
-      Cookies.set(TOKEN_KEY, data.accessToken, { expires: TOKEN_EXPIRES_DAYS });
+      Cookies.set(TOKEN_KEY, data.accessToken, { expires: TOKEN_EXPIRES_DAYS, path: "/" });
     }
 
     const user = data.user || data.customer || data.staff;
@@ -37,17 +37,17 @@ export const authService = {
       user.role = role;
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       localStorage.setItem(STAFF_KEY, JSON.stringify(user));
-      Cookies.set(ROLE_KEY, role, { expires: TOKEN_EXPIRES_DAYS });
-      Cookies.set(USER_KEY, JSON.stringify(user), { expires: TOKEN_EXPIRES_DAYS });
+      Cookies.set(ROLE_KEY, role, { expires: TOKEN_EXPIRES_DAYS, path: "/" });
+      Cookies.set(USER_KEY, JSON.stringify(user), { expires: TOKEN_EXPIRES_DAYS, path: "/" });
     }
 
     return data;
   },
 
   logout() {
-    Cookies.remove(TOKEN_KEY);
-    Cookies.remove(ROLE_KEY);
-    Cookies.remove(USER_KEY);
+    Cookies.remove(TOKEN_KEY, { path: "/" });
+    Cookies.remove(ROLE_KEY, { path: "/" });
+    Cookies.remove(USER_KEY, { path: "/" });
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(STAFF_KEY);
     window.location.href = "/login";

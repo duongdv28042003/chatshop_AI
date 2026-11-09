@@ -87,7 +87,16 @@ export function BrandLogo({
                   : "text-neutral-900 dark:text-neutral-100"
               }`}
             >
-              FASHION <span className="font-semibold text-neutral-500 dark:text-neutral-400">AI</span>
+              FASHION{" "}
+              <span
+                className={`font-semibold ${
+                  lightText
+                    ? "text-[#17c1e8]"
+                    : "text-neutral-500 dark:text-neutral-400"
+                }`}
+              >
+                AI
+              </span>
             </span>
           </div>
           {subtitle !== undefined ? (
@@ -95,7 +104,7 @@ export function BrandLogo({
               suppressHydrationWarning
               className={`${s.sub} ${
                 lightText
-                  ? "text-neutral-400"
+                  ? "text-neutral-200 font-medium"
                   : "text-neutral-500 dark:text-neutral-400"
               } font-mono mt-1 truncate`}
             >

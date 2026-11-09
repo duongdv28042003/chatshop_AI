@@ -32,7 +32,9 @@ apiClient.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401) {
-      Cookies.remove("access_token");
+      Cookies.remove("access_token", { path: "/" });
+      Cookies.remove("user_role", { path: "/" });
+      Cookies.remove("user_info", { path: "/" });
       window.location.href = "/login";
     }
     return Promise.reject(error);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
@@ -16,6 +16,8 @@ import {
   Image as ImageIcon,
   Star,
   Check,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -323,21 +325,21 @@ export default function ProductsPage() {
       variants:
         product.variants && product.variants.length > 0
           ? product.variants.map((v) => ({
-              id: v.id,
-              sku: v.sku,
-              color: v.color || "",
-              size: v.size || "",
-              price: v.price,
-              stock: v.stock,
-            }))
+            id: v.id,
+            sku: v.sku,
+            color: v.color || "",
+            size: v.size || "",
+            price: v.price,
+            stock: v.stock,
+          }))
           : [{ sku: "", color: "Đen", size: "M", price: 150000, stock: 10 }],
       images:
         product.images && product.images.length > 0
           ? product.images.map((img) => ({
-              id: img.id,
-              imageUrl: img.imageUrl,
-              isPrimary: img.isPrimary,
-            }))
+            id: img.id,
+            imageUrl: img.imageUrl,
+            isPrimary: img.isPrimary,
+          }))
           : [],
     });
     setIsFormOpen(true);
@@ -372,7 +374,32 @@ export default function ProductsPage() {
     });
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const filtered = products ?? [];
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / pageSize) || 1;
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedProducts = filtered.slice(startIndex, startIndex + pageSize);
+
+  const getPageNumbers = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (currentPage <= 4) {
+      return [1, 2, 3, 4, 5, "...", totalPages];
+    }
+    if (currentPage >= totalPages - 3) {
+      return [1, "...", totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    }
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+  };
 
   const getTotalStock = (product: Product) =>
     (product.variants ?? []).reduce((sum, v) => sum + v.stock, 0);
@@ -390,7 +417,7 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      {}
+      { }
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Quản lý Sản phẩm</h1>
@@ -451,7 +478,7 @@ export default function ProductsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((product) => {
+                {paginatedProducts.map((product) => {
                   const totalStock = getTotalStock(product);
                   const primaryImg = getPrimaryImage(product);
                   return (
@@ -512,13 +539,12 @@ export default function ProductsPage() {
                       </TableCell>
                       <TableCell className="text-center">
                         <span
-                          className={`text-sm font-bold px-2 py-0.5 rounded-full ${
-                            totalStock === 0
+                          className={`text-sm font-bold px-2 py-0.5 rounded-full ${totalStock === 0
                               ? "bg-red-500/10 text-red-500"
                               : totalStock <= 5
-                              ? "bg-amber-500/10 text-amber-500"
-                              : "bg-emerald-500/10 text-emerald-500"
-                          }`}
+                                ? "bg-amber-500/10 text-amber-500"
+                                : "bg-emerald-500/10 text-emerald-500"
+                            }`}
                         >
                           {totalStock}
                         </span>
@@ -572,6 +598,100 @@ export default function ProductsPage() {
                 })}
               </TableBody>
             </Table>
+          )}
+
+          {/* Pagination Controller */}
+          {totalItems > 0 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-border/40 text-xs text-muted-foreground bg-muted/10">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span>
+                  Hiển thị{" "}
+                  <span className="font-semibold text-foreground font-mono">
+                    {startIndex + 1}
+                  </span>{" "}
+                  -{" "}
+                  <span className="font-semibold text-foreground font-mono">
+                    {Math.min(startIndex + pageSize, totalItems)}
+                  </span>{" "}
+                  trên tổng số{" "}
+                  <span className="font-semibold text-foreground font-mono">
+                    {totalItems}
+                  </span>{" "}
+                  sản phẩm
+                </span>
+                <span className="text-muted-foreground/40 hidden sm:inline">•</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="hidden sm:inline">Mỗi trang:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="h-7 rounded border border-border bg-background px-2 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-[#17c1e8]"
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                </div>
+              </div>
+
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1 flex-wrap justify-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    className="h-7 px-2 text-xs font-mono rounded border-border disabled:opacity-40"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5 mr-1" /> Trước
+                  </Button>
+
+                  <div className="flex items-center gap-1">
+                    {getPageNumbers().map((p, idx) => {
+                      if (p === "...") {
+                        return (
+                          <span
+                            key={`dots-${idx}`}
+                            className="px-1.5 text-xs text-muted-foreground font-mono"
+                          >
+                            ...
+                          </span>
+                        );
+                      }
+                      const pageNum = Number(p);
+                      const isActive = pageNum === currentPage;
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`h-7 min-w-7 px-2 rounded text-xs font-mono font-medium transition-colors ${isActive
+                              ? "bg-[#17c1e8] text-slate-950 font-bold shadow-sm"
+                              : "border border-border bg-background hover:bg-muted text-foreground"
+                            }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    className="h-7 px-2 text-xs font-mono rounded border-border disabled:opacity-40"
+                  >
+                    Sau <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                  </Button>
+                </div>
+              )}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -721,11 +841,10 @@ export default function ProductsPage() {
                       );
                       handleFiles(files);
                     }}
-                    className={`border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center cursor-pointer transition-colors ${
-                      isDraggingOver
+                    className={`border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center cursor-pointer transition-colors ${isDraggingOver
                         ? "border-neutral-900 bg-neutral-100 dark:border-neutral-100 dark:bg-neutral-800"
                         : "border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 bg-neutral-50/50 dark:bg-neutral-900/50"
-                    }`}
+                      }`}
                   >
                     <input
                       ref={fileInputRef}
@@ -777,9 +896,8 @@ export default function ProductsPage() {
                       {formData.images.map((img, idx) => (
                         <div
                           key={idx}
-                          className={`relative group rounded-md overflow-hidden border aspect-square bg-neutral-100 dark:bg-neutral-800 ${
-                            img.isPrimary ? "border-neutral-900 dark:border-neutral-100 ring-1 ring-neutral-900 dark:ring-neutral-100" : "border-neutral-200 dark:border-neutral-800"
-                          }`}
+                          className={`relative group rounded-md overflow-hidden border aspect-square bg-neutral-100 dark:bg-neutral-800 ${img.isPrimary ? "border-neutral-900 dark:border-neutral-100 ring-1 ring-neutral-900 dark:ring-neutral-100" : "border-neutral-200 dark:border-neutral-800"
+                            }`}
                         >
                           <img
                             src={img.imageUrl}

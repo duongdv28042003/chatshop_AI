@@ -135,6 +135,10 @@ export function FloatingAIAssistant() {
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      const timer = setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
     }
   }, [messages.length, isOpen, isSending]);
 
@@ -311,7 +315,10 @@ export function FloatingAIAssistant() {
     setInput("");
     setSelectedImage(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.focus();
+    }
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
@@ -368,6 +375,9 @@ export function FloatingAIAssistant() {
       setMessages((prev) => [...prev, errorReply]);
     } finally {
       setIsSending(false);
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
     }
   };
 
@@ -447,6 +457,7 @@ export function FloatingAIAssistant() {
       >
         <button
           type="button"
+          suppressHydrationWarning
           className={`relative group cursor-grab active:cursor-grabbing transition-transform duration-200 outline-none ${isDragging ? "scale-105" : "hover:scale-105 active:scale-95"
             }`}
           title={isOpen ? "Đóng trợ lý AI" : "Mở trợ lý AI tư vấn"}
@@ -730,12 +741,13 @@ export function FloatingAIAssistant() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  handleSendMessage();
+                  if (!isSending) {
+                    handleSendMessage();
+                  }
                 }
               }}
               onPaste={handlePaste}
               placeholder={selectedImage ? "Thêm ghi chú..." : "Nhắn tin hoặc gửi ảnh tìm đồ..."}
-              disabled={isSending}
               className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 text-xs min-h-[36px] max-h-[120px] py-2 px-3 rounded-md focus:border-neutral-400 dark:focus:border-neutral-600 focus:outline-none flex-1 resize-none custom-scrollbar leading-relaxed"
             />
 

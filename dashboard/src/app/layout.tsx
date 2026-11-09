@@ -23,7 +23,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className="dark" suppressHydrationWarning>
-      <body className={inter.className}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "if(typeof window!=='undefined'){window.zaloJSV2=window.zaloJSV2||{};}",
+          }}
+        />
+      </head>
+      <body className={inter.className} suppressHydrationWarning>
         <Providers>
           {children}
           <Toaster richColors position="top-right" />

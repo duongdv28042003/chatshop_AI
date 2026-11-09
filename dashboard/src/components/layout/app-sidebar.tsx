@@ -31,6 +31,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { authService, type UnifiedUser } from "@/lib/auth";
+import { useUserRole } from "@/components/providers/role-context";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { SidebarContactLinks } from "@/components/layout/sidebar-contact-links";
 
@@ -82,17 +83,7 @@ const navConfig: NavGroup[] = [
 
 export function AppSidebar() {
   const pathname = usePathname();
-  const [user, setUser] = useState<UnifiedUser | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setUser(authService.getCurrentUser());
-    setMounted(true);
-  }, []);
-
-  const role: "admin" | "staff" | "customer" =
-    (user?.role as "admin" | "staff" | "customer") ||
-    (mounted ? authService.getRole() : "customer");
+  const { role, user } = useUserRole();
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -181,10 +172,10 @@ export function AppSidebar() {
         <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-t border-border">
           <div className="min-w-0 flex-1">
             <p suppressHydrationWarning className="text-sm font-semibold text-foreground truncate">
-              {mounted ? (user?.fullName || user?.name || "Người dùng") : "Người dùng"}
+              {user?.fullName || user?.name || "Người dùng"}
             </p>
             <p suppressHydrationWarning className="text-[11px] text-muted-foreground font-mono truncate">
-              {mounted ? roleLabel : "Khách Hàng"}
+              {roleLabel}
             </p>
           </div>
           <button

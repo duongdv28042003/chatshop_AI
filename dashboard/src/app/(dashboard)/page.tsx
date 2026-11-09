@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CustomerStorefront } from "@/components/shop/customer-storefront";
 import { authService } from "@/lib/auth";
+import { useUserRole } from "@/components/providers/role-context";
 import {
   ChartConfig,
   ChartContainer,
@@ -126,11 +127,7 @@ function StatCard({
 }
 
 export default function DashboardPage() {
-  const [role, setRole] = useState<string>("customer");
-
-  useEffect(() => {
-    setRole(authService.getRole());
-  }, []);
+  const { role } = useUserRole();
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["dashboard-stats"],
